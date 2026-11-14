@@ -138,24 +138,30 @@
         <!-- 右側：リアルタイムプレビューパネル -->
         <main id="preview-pane" class="hidden lg:flex flex-1 flex-col bg-slate-200/80 h-full overflow-hidden">
             <!-- プレビューツールバー -->
-            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>リアルタイムプレビュー</span>
-                    <span id="preview-security-badge" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+            <div class="bg-slate-100 border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 flex-shrink-0">
+                <div class="flex items-center gap-2 text-xs text-slate-600 font-medium min-w-0">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+                    <span class="truncate">リアルタイムプレビュー</span>
+                    <span id="preview-security-badge" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex-shrink-0">
                         <i class="fas fa-user-secret"></i>検索除けON
                     </span>
                 </div>
-                <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                    <button id="preview-mode-desktop" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-600 transition" title="PC・タブレット表示">
-                        <i class="fas fa-desktop mr-1"></i>PC幅
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <button id="preview-toggle-lock" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:text-amber-700 hover:bg-amber-50 border border-slate-200 shadow-sm transition flex items-center gap-1" title="パスコード入力画面（ロック画面）の見た目をプレビュー">
+                        <i class="fas fa-lock text-amber-500"></i>
+                        <span>ロック画面確認</span>
                     </button>
-                    <button id="preview-mode-mobile" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition" title="スマートフォン表示">
-                        <i class="fas fa-mobile-alt mr-1"></i>スマホ幅
-                    </button>
-                    <button id="preview-refresh" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-indigo-600 border-l border-slate-200 ml-1 pl-2.5 transition" title="プレビューを再描画">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                        <button id="preview-mode-desktop" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-600 transition" title="PC・タブレット表示">
+                            <i class="fas fa-desktop mr-1"></i>PC幅
+                        </button>
+                        <button id="preview-mode-mobile" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition" title="スマートフォン表示">
+                            <i class="fas fa-mobile-alt mr-1"></i>スマホ幅
+                        </button>
+                        <button id="preview-refresh" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-indigo-600 border-l border-slate-200 ml-1 pl-2.5 transition" title="プレビューを再描画">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1206,6 +1212,7 @@ function normalizeShioriData(raw) {
 // アプリケーション状態
 let appData = normalizeShioriData(EMPTY_SHIORI_DATA);
 let currentTab = 'basic';
+let isLockScreenPreview = false;
 let previewUpdateTimer = null;
 
 // ローカルストレージから前回の編集状態を復元
@@ -1277,17 +1284,59 @@ function updateSecurityBadgeUI() {
     if (!badge) return;
     const m = appData.meta;
     if (m.enableNoIndex && m.passcode && m.passcode.trim() !== '') {
-        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold';
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex-shrink-0';
         badge.innerHTML = '<i class="fas fa-shield-alt"></i>検索除け＋合言葉ロック有効';
     } else if (m.enableNoIndex) {
-        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold';
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex-shrink-0';
         badge.innerHTML = '<i class="fas fa-user-secret"></i>検索除けON';
     } else if (m.passcode && m.passcode.trim() !== '') {
-        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold';
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold flex-shrink-0';
         badge.innerHTML = '<i class="fas fa-lock"></i>合言葉ロック有効';
     } else {
-        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold';
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold flex-shrink-0';
         badge.innerHTML = '<i class="fas fa-globe"></i>通常公開設定';
+    }
+}
+
+function updateLockPreviewToggleUI() {
+    const toolbarBtn = document.getElementById('preview-toggle-lock');
+    if (toolbarBtn) {
+        if (isLockScreenPreview) {
+            toolbarBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm transition flex items-center gap-1';
+            toolbarBtn.innerHTML = '<i class="fas fa-lock-open text-amber-600"></i><span>通常画面に戻す</span>';
+        } else {
+            toolbarBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:text-amber-700 hover:bg-amber-50 border border-slate-200 shadow-sm transition flex items-center gap-1';
+            toolbarBtn.innerHTML = '<i class="fas fa-lock text-amber-500"></i><span>ロック画面確認</span>';
+        }
+    }
+
+    const formBtn = document.getElementById('btn-form-preview-lock');
+    if (formBtn) {
+        if (isLockScreenPreview) {
+            formBtn.className = 'w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5';
+            formBtn.innerHTML = '<i class="fas fa-eye-slash"></i><span>ロック画面プレビューを終了してしおりに戻る</span>';
+        } else {
+            formBtn.className = 'w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition flex items-center justify-center gap-1.5';
+            formBtn.innerHTML = '<i class="fas fa-eye text-amber-600"></i><span>パスコード入力画面（ロック画面）をプレビューする</span>';
+        }
+    }
+}
+
+function toggleLockScreenPreview(forceState = null) {
+    isLockScreenPreview = typeof forceState === 'boolean' ? forceState : !isLockScreenPreview;
+    updateLockPreviewToggleUI();
+
+    // スマホ表示で編集中にボタンを押した場合はプレビュー画面へ自動切り替え
+    if (isLockScreenPreview && window.innerWidth < 1024) {
+        const mobilePreviewBtn = document.getElementById('mobile-view-preview');
+        if (mobilePreviewBtn) mobilePreviewBtn.click();
+    }
+
+    updatePreviewIframe();
+    if (isLockScreenPreview) {
+        showToast('パスコード入力画面（ロック画面）をプレビュー表示中です');
+    } else {
+        showToast('通常のしおりプレビューに戻りました');
     }
 }
 
@@ -1312,7 +1361,6 @@ function saveDraftAndRefreshPreview(immediate = false) {
 function handlePasscodeInput(val) {
     appData.meta.passcode = val;
     const statusBadge = document.getElementById('passcode-status-badge');
-    const hintInput = document.getElementById('passcode-hint-input');
     const hasPasscode = val && val.trim() !== '';
 
     if (statusBadge) {
@@ -1320,15 +1368,6 @@ function handlePasscodeInput(val) {
             ? 'text-[10px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold'
             : 'text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500';
         statusBadge.textContent = hasPasscode ? 'ロック有効' : '未設定（誰でも閲覧可）';
-    }
-    if (hintInput) {
-        if (hasPasscode) {
-            hintInput.classList.remove('bg-slate-50', 'text-slate-500');
-            hintInput.classList.add('bg-white', 'text-slate-800');
-        } else {
-            hintInput.classList.remove('bg-white', 'text-slate-800');
-            hintInput.classList.add('bg-slate-50', 'text-slate-500');
-        }
     }
     saveDraftAndRefreshPreview();
 }
@@ -1596,7 +1635,7 @@ function renderEditorTab(tab) {
                             </div>
                         </label>
 
-                        <!-- パスコード＆ヒント編集ブロック（常に両方編集可能） -->
+                        <!-- パスコード＆ヒント編集ブロック（常に白背景＋うっすら例を表示） -->
                         <div class="bg-white/95 p-3.5 rounded-xl border border-emerald-200/80 space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -1607,21 +1646,27 @@ function renderEditorTab(tab) {
                                 </span>
                             </div>
                             
-                            <div class="space-y-2">
+                            <div class="space-y-2.5">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">合言葉（パスコード）</label>
-                                    <input type="text" value="${escapeHtml(m.passcode)}" placeholder="空欄ならロックなし（例：2026summer）" oninput="handlePasscodeInput(this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600">
+                                    <input type="text" value="${escapeHtml(m.passcode)}" placeholder="例：2026summer（空欄ならロックなし）" oninput="handlePasscodeInput(this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600">
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1">
                                         <i class="fas fa-lightbulb text-amber-400 mr-1"></i>パスコードのヒント（ロック画面に表示されます）
                                     </label>
-                                    <input type="text" id="passcode-hint-input" value="${escapeHtml(m.passcodeHint)}" placeholder="例：LINEグループでお知らせした4桁の数字" oninput="updateDataByPath('meta.passcodeHint', this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600 ${hasPasscode ? 'bg-white text-slate-800' : 'bg-slate-50 text-slate-500'}">
+                                    <input type="text" id="passcode-hint-input" value="${escapeHtml(m.passcodeHint)}" placeholder="例：LINEグループでお知らせした4桁の数字" oninput="updateDataByPath('meta.passcodeHint', this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600">
                                 </div>
                             </div>
 
+                            <button type="button" id="btn-form-preview-lock" onclick="toggleLockScreenPreview()" class="${isLockScreenPreview ? 'w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5' : 'w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition flex items-center justify-center gap-1.5'}">
+                                ${isLockScreenPreview
+                                    ? '<i class="fas fa-eye-slash"></i><span>ロック画面プレビューを終了してしおりに戻る</span>'
+                                    : '<i class="fas fa-eye text-amber-600"></i><span>パスコード入力画面（ロック画面）をプレビューする</span>'}
+                            </button>
+
                             <p class="text-[10px] text-slate-500 leading-relaxed">
-                                ※合言葉を設定すると、URLを知っている人でも合言葉を入力するまで日程や宿泊先が表示されなくなります（プレビュー画面では編集しやすいよう自動解除されています）。
+                                ※合言葉を設定すると、URLを知っている人でも合言葉を入力するまで日程や宿泊先が表示されなくなります。上のボタンで実際のロック画面とヒントの見た目をいつでも確認できます。
                             </p>
                         </div>
                     </div>
@@ -2401,10 +2446,11 @@ function loadSampleDataWithConfirm() {
 /**
  * 完全なスタンドアロンHTMLコードを生成するジェネレーターエンジン（Netlify Drop & 検索除け対応）
  * @param {object} data しおりデータ
- * @param {object} options { isPreviewMode: boolean }
+ * @param {object} options { isPreviewMode: boolean, showLockPreview: boolean }
  */
 function generateShioriHTML(data, options = {}) {
     const isPreviewMode = Boolean(options.isPreviewMode);
+    const showLockPreview = Boolean(options.showLockPreview);
 
     const m = data.meta;
     const p = data.plan;
@@ -2617,7 +2663,7 @@ ${eventsHtml}
         }).join('\n');
     };
 
-    // Leaflet マップデータ用JSON（有効な座標を持つスポットのみピン配置し、東京駅デフォルト汚染による広域ズレを防ぐ）
+    // Leaflet マップデータ用JSON
     const safeHotelLat = isValidLatLng(ag.hotelLat, ag.hotelLng) ? Number(ag.hotelLat) : 35.681236;
     const safeHotelLng = isValidLatLng(ag.hotelLat, ag.hotelLng) ? Number(ag.hotelLng) : 139.767125;
 
@@ -2644,12 +2690,16 @@ ${eventsHtml}
         ? checklistDisplayItems
         : (isPreviewMode ? ['（持ち物リストを追加するとここに表示されます）'] : []);
 
-    // 閲覧用パスコードロック画面（合言葉が設定されており、かつプレビューモードでない場合のみ有効化）
-    const activePasscode = (!isPreviewMode && m.passcode && m.passcode.trim() !== '') ? m.passcode.trim() : '';
-    const passcodeGateHtml = activePasscode ? `
+    // 閲覧用パスコードロック画面（本番でパスコード設定時、またはロック画面プレビュー時に表示）
+    const trimmedPasscode = (m.passcode && m.passcode.trim() !== '') ? m.passcode.trim() : '';
+    const shouldRenderLockGate = showLockPreview || (!isPreviewMode && trimmedPasscode !== '');
+    const activePasscode = trimmedPasscode;
+
+    const passcodeGateHtml = shouldRenderLockGate ? `
 <!-- 検索除け＆限定公開用パスコードゲート -->
 <div id="passcode-gate" class="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-7 text-center space-y-5 border border-gray-100">
+        ${showLockPreview ? `<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold"><i class="fas fa-eye"></i>ロック画面プレビュー表示中</div>` : ''}
         <div class="w-16 h-16 rounded-2xl bg-primary/15 text-primary flex items-center justify-center mx-auto text-2xl">
             <i class="fas fa-lock"></i>
         </div>
@@ -2661,6 +2711,7 @@ ${eventsHtml}
         <div class="space-y-2.5 text-left">
             <input type="password" id="passcode-input" placeholder="合言葉を入力" onkeydown="if(event.key==='Enter'){verifyShioriPasscode();}" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:border-primary">
             ${m.passcodeHint ? `<div class="bg-amber-50 border border-amber-200/80 rounded-xl px-3 py-2 text-[11px] text-amber-900 text-center"><i class="fas fa-lightbulb text-amber-500 mr-1"></i>ヒント：${escapeHtml(m.passcodeHint)}</div>` : ''}
+            ${showLockPreview && !activePasscode ? `<p class="text-[11px] text-slate-500 text-center">※現在パスコード未設定のため仮表示しています（任意の文字または空欄で解除テストできます）</p>` : ''}
             <p id="passcode-error" class="hidden text-xs text-red-500 font-bold text-center">合言葉が正しくありません</p>
         </div>
         <button type="button" onclick="verifyShioriPasscode()" class="w-full py-3 rounded-xl bg-primary hover:opacity-90 text-white font-bold text-sm shadow-md transition">
@@ -2669,9 +2720,10 @@ ${eventsHtml}
     </div>
 </div>` : '';
 
-    const passcodeGateScript = activePasscode ? `
+    const passcodeGateScript = shouldRenderLockGate ? `
     // パスコード認証ロジック
     const SHIORI_PASSCODE = ${JSON.stringify(activePasscode)};
+    const IS_LOCK_PREVIEW = ${JSON.stringify(showLockPreview)};
     const PASSCODE_STORAGE_KEY = ${JSON.stringify((m.storageKey || 'shioriChecklist') + '_unlocked')};
 
     function unlockShioriGate() {
@@ -2687,8 +2739,11 @@ ${eventsHtml}
         const input = document.getElementById('passcode-input');
         const err = document.getElementById('passcode-error');
         if (!input) return;
-        if (input.value.trim() === SHIORI_PASSCODE) {
-            try { sessionStorage.setItem(PASSCODE_STORAGE_KEY, '1'); } catch (e) {}
+        const isMatched = (IS_LOCK_PREVIEW && SHIORI_PASSCODE === '') || (input.value.trim() === SHIORI_PASSCODE);
+        if (isMatched) {
+            if (!IS_LOCK_PREVIEW) {
+                try { sessionStorage.setItem(PASSCODE_STORAGE_KEY, '1'); } catch (e) {}
+            }
             unlockShioriGate();
         } else {
             if (err) err.classList.remove('hidden');
@@ -2696,14 +2751,18 @@ ${eventsHtml}
         }
     }
 
-    try {
-        if (sessionStorage.getItem(PASSCODE_STORAGE_KEY) === '1') {
-            unlockShioriGate();
-        } else {
+    if (IS_LOCK_PREVIEW) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        try {
+            if (sessionStorage.getItem(PASSCODE_STORAGE_KEY) === '1') {
+                unlockShioriGate();
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
+        } catch (e) {
             document.body.style.overflow = 'hidden';
         }
-    } catch (e) {
-        document.body.style.overflow = 'hidden';
     }` : '';
 
     return `<!DOCTYPE html>
@@ -3524,11 +3583,14 @@ function updatePreviewIframe() {
         }
     } catch (e) {}
 
-    const htmlCode = generateShioriHTML(appData, { isPreviewMode: true });
+    const htmlCode = generateShioriHTML(appData, {
+        isPreviewMode: true,
+        showLockPreview: isLockScreenPreview
+    });
     iframe.srcdoc = htmlCode;
     iframe.onload = () => {
         try {
-            if (savedScrollY > 0) {
+            if (!isLockScreenPreview && savedScrollY > 0) {
                 iframe.contentWindow.scrollTo(0, savedScrollY);
             }
             if (typeof iframe.contentWindow.refreshAreaMapLayout === 'function') {
@@ -3546,7 +3608,7 @@ function openExportModal() {
     const codeArea = document.getElementById('generated-code-area');
     const summaryEl = document.getElementById('export-security-summary');
 
-    codeArea.value = generateShioriHTML(appData, { isPreviewMode: false });
+    codeArea.value = generateShioriHTML(appData, { isPreviewMode: false, showLockPreview: false });
 
     const m = appData.meta;
     const statusBadges = [];
@@ -3583,7 +3645,7 @@ async function downloadNetlifyZipPackage() {
         const folder = zip.folder('shiori-netlify-drop');
 
         // 1. index.html
-        const htmlContent = generateShioriHTML(appData, { isPreviewMode: false });
+        const htmlContent = generateShioriHTML(appData, { isPreviewMode: false, showLockPreview: false });
         folder.file('index.html', htmlContent);
 
         // 2. robots.txt（全検索クローラー巡回拒否）
@@ -3637,6 +3699,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             renderEditorTab(btn.dataset.tab);
         });
+    });
+
+    // ロック画面プレビュー切り替えボタン（ツールバー側）
+    document.getElementById('preview-toggle-lock').addEventListener('click', () => {
+        toggleLockScreenPreview();
     });
 
     // モバイル表示切り替え（編集 / プレビュー）
@@ -3849,8 +3916,10 @@ document.addEventListener('DOMContentLoaded', () => {
             'これまでの入力内容がクリアされ、初期状態に戻ります（注意事項と持ち物の基本例は残ります）。よろしいですか？',
             () => {
                 appData = normalizeShioriData(EMPTY_SHIORI_DATA);
+                isLockScreenPreview = false;
                 localStorage.removeItem('shioriGeneratorDraft_v6');
                 updateSecurityBadgeUI();
+                updateLockPreviewToggleUI();
                 renderEditorTab(currentTab);
                 updatePreviewIframe();
                 showToast('初期状態に戻しました（注意事項・持ち物の基本例は読み込み済み）');
@@ -3860,6 +3929,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初期描画
     updateSecurityBadgeUI();
+    updateLockPreviewToggleUI();
     renderEditorTab('basic');
     updatePreviewIframe();
 });
