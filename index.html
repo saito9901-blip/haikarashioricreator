@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅のしおり Webページ作成ジェネレーター</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>旅のしおり Webページ作成ツール（Netlify Drop対応）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Netlify Drop用フォルダZIP生成ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -57,7 +60,7 @@
             </div>
             <div>
                 <h1 class="font-bold text-sm sm:text-base text-slate-800 leading-tight">旅のしおり Webページ作成ツール</h1>
-                <p class="text-[11px] text-slate-500 hidden sm:block">GoogleマップURL対応・Googleサイト埋め込みコードもワンクリック生成</p>
+                <p class="text-[11px] text-slate-500 hidden sm:block">GoogleマップURL対応・Netlify Dropで即公開＆検索除け対策済みHTMLを生成</p>
             </div>
         </div>
 
@@ -73,7 +76,7 @@
 
         <!-- アクションボタン群 -->
         <div class="flex items-center gap-1.5 sm:gap-2">
-            <button id="btn-help" title="ツールの使い方・Googleサイト公開説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
+            <button id="btn-help" title="ツールの使い方・Netlify Drop公開説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
                 <i class="fas fa-question-circle text-indigo-500"></i>
                 <span class="hidden md:inline">説明書</span>
             </button>
@@ -89,14 +92,10 @@
                 <i class="fas fa-database"></i>
                 <span class="hidden xl:inline">保存/読込</span>
             </button>
-            <button id="btn-export-gsites" title="Googleサイト埋め込み用コードを生成" class="px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
-                <i class="fab fa-google"></i>
-                <span class="hidden sm:inline">Googleサイト出力</span>
-                <span class="sm:hidden">Gサイト</span>
-            </button>
-            <button id="btn-export-html" title="単体HTMLファイルを出力" class="px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
-                <i class="fas fa-code"></i>
-                <span class="hidden sm:inline">HTML出力</span>
+            <button id="btn-export-html" title="Netlify Drop用のHTML・検索除け一式を出力" class="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span class="hidden sm:inline">HTML出力 (Netlify用)</span>
+                <span class="sm:hidden">HTML出力</span>
             </button>
         </div>
     </header>
@@ -109,7 +108,7 @@
             <!-- セクションナビゲーションタブ -->
             <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex gap-1.5 overflow-x-auto flex-shrink-0">
                 <button class="tab-btn active px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5" data-tab="basic">
-                    <i class="fas fa-palette"></i>基本・表紙
+                    <i class="fas fa-palette"></i>基本・検索除け
                 </button>
                 <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="plan">
                     <i class="fas fa-hotel"></i>PLAN
@@ -144,6 +143,9 @@
                 <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
                     <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>リアルタイムプレビュー</span>
+                    <span id="preview-security-badge" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                        <i class="fas fa-user-secret"></i>検索除けON
+                    </span>
                 </div>
                 <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                     <button id="preview-mode-desktop" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-600 transition" title="PC・タブレット表示">
@@ -167,69 +169,57 @@
         </main>
     </div>
 
-    <!-- コード出力モーダル（Googleサイト出力 & 単体HTML出力 統合） -->
+    <!-- HTML出力モーダル（Netlify Drop 公開＆検索除けパッケージ出力） -->
     <div id="export-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
         <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <div class="flex items-center gap-3">
-                    <div id="export-modal-icon" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
-                        <i class="fab fa-google text-lg"></i>
+                    <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
+                        <i class="fas fa-cloud-upload-alt text-lg"></i>
                     </div>
                     <div>
-                        <h2 id="export-modal-title" class="font-bold text-lg text-slate-800">Googleサイト埋め込み用コード出力</h2>
-                        <p id="export-modal-subtitle" class="text-xs text-slate-500 mt-0.5">Googleサイトの「埋め込みコード」に貼り付けて部員に共有できます</p>
+                        <h2 class="font-bold text-lg text-slate-800">Netlify Drop 公開用HTML・検索除けパッケージ出力</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">フォルダごと Netlify Drop にドラッグ＆ドロップするだけで即公開・メンバー共有できます</p>
                     </div>
                 </div>
                 <button id="close-export-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
-            <!-- 出力形式切り替えタブ -->
-            <div class="px-6 pt-3 bg-slate-50 border-b border-slate-200 flex gap-2">
-                <button id="tab-export-gsites" class="px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-blue-600 text-blue-700 bg-white flex items-center gap-1.5 transition">
-                    <i class="fab fa-google"></i>Googleサイト埋め込み用（推奨・部員共有向け）
-                </button>
-                <button id="tab-export-html" class="px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition">
-                    <i class="fas fa-file-code"></i>単体HTMLファイル (index.html)
-                </button>
-            </div>
             
             <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
-                <!-- Googleサイト用ガイドバナー -->
-                <div id="guide-export-gsites" class="bg-blue-50/80 p-4 rounded-2xl border border-blue-200 space-y-2.5">
+                <!-- Netlify Drop 公開手順＆ダウンロードガイド -->
+                <div class="bg-teal-50/80 p-4 rounded-2xl border border-teal-200 space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                            <i class="fas fa-share-alt text-blue-600"></i>Googleサイトで表示して部員に流す手順
+                        <span class="text-xs font-bold text-teal-900 flex items-center gap-1.5">
+                            <i class="fas fa-rocket text-teal-600"></i>Netlify Drop で公開する手順（無料・30秒で完了）
                         </span>
-                        <button id="btn-copy-gsites-code" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                            <i class="far fa-copy"></i>Googleサイト用コードをコピー
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="btn-download-zip" class="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="index.html + robots.txt + _headers が入ったフォルダ一式をZIPで保存">
+                                <i class="fas fa-file-archive"></i>検索除け完全パック (ZIP)
+                            </button>
+                            <button id="btn-download-html" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                                <i class="fas fa-download"></i>index.html 単体保存
+                            </button>
+                            <button id="btn-copy-code" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                                <i class="far fa-copy"></i>HTMLコピー
+                            </button>
+                        </div>
                     </div>
-                    <ol class="text-xs text-blue-900/90 space-y-1 list-decimal list-inside leading-relaxed">
-                        <li>上の<strong>「Googleサイト用コードをコピー」</strong>を押します（Googleサイトのiframe内で崩れず、外部マップも別タブで開く専用仕様です）。</li>
-                        <li><a href="https://sites.google.com/" target="_blank" rel="noopener noreferrer" class="underline font-bold text-blue-700 hover:text-blue-900">Googleサイト</a>を開き、右側メニューの<strong>「挿入」＞「埋め込み」＞「埋め込みコード」</strong>を選択して貼り付けます。</li>
-                        <li>挿入されたプレビュー枠の端をドラッグして<strong>横幅いっぱい・縦長</strong>に広げ、右上の<strong>「公開」</strong>を押してURLを部員に共有してください。</li>
+
+                    <ol class="text-xs text-teal-950 space-y-1.5 list-decimal list-inside leading-relaxed">
+                        <li>上の<strong>「検索除け完全パック (ZIP)」</strong>（推奨）または<strong>「index.html 単体保存」</strong>をダウンロードします。<br>
+                        <span class="text-[11px] text-teal-800 ml-4">※ZIPを解凍すると <code>index.html</code>・<code>robots.txt</code>・<code>_headers</code> が入ったフォルダが作成されます（単体保存の場合は空フォルダを作って <code>index.html</code> を入れてください）。</span></li>
+                        <li><a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="underline font-bold text-teal-700 hover:text-teal-900">Netlify Drop (app.netlify.com/drop)</a> を開き、点線枠の中に<strong>フォルダごとドラッグ＆ドロップ</strong>します。</li>
+                        <li>数秒でランダムな公開URL（例：<code>https://〇〇-〇〇.netlify.app</code>）が発行されるので、そのURLをメンバーのLINE・Discord等に共有してください！</li>
                     </ol>
-                </div>
 
-                <!-- 単体HTML用ガイドバナー -->
-                <div id="guide-export-html" class="hidden bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 flex flex-wrap items-center justify-between gap-2">
-                    <div class="text-xs text-indigo-900 max-w-xl leading-relaxed">
-                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>
-                        この1ファイルだけでデザイン・地図・チェックリストすべてが動作します。サーバーへのアップロードやLINEでの直接配布に便利です。
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="btn-copy-code" class="px-4 py-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                            <i class="far fa-copy"></i>コードをコピー
-                        </button>
-                        <button id="btn-download-html" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                            <i class="fas fa-download"></i>index.html をダウンロード
-                        </button>
+                    <div id="export-security-summary" class="bg-white/90 p-2.5 rounded-xl border border-teal-200/80 text-[11px] text-slate-700 flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <!-- JSで現在の検索除けステータスを表示 -->
                     </div>
                 </div>
 
-                <textarea id="generated-code-area" readonly class="w-full flex-1 min-h-[260px] font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
+                <textarea id="generated-code-area" readonly class="w-full flex-1 min-h-[250px] font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
             </div>
         </div>
     </div>
@@ -291,7 +281,7 @@
                     </div>
                     <div>
                         <h2 class="font-bold text-lg text-slate-800">旅のしおり Webページ作成ツール 説明書</h2>
-                        <p class="text-xs text-slate-500">GoogleマップURL自動連携・Googleサイト公開までの運用ガイド</p>
+                        <p class="text-xs text-slate-500">Netlify Drop 公開手順・徹底検索除け対策・編集ガイド</p>
                     </div>
                 </div>
                 <button id="close-help-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
@@ -305,7 +295,7 @@
                         <i class="fas fa-sparkles"></i>1. このツールについて
                     </h3>
                     <p class="text-xs sm:text-sm text-slate-600">
-                        合宿や遠征・旅行の「Webしおり」を、プログラミング知識なしで作成できるツールです。左側のフォームに入力するだけで右側にプレビューが反映され、<strong>Googleサイト（Google Sites）にそのまま埋め込んで部員に共有できる専用コード</strong>や、単体HTMLファイルを出力できます。
+                        合宿や遠征・旅行の「Webしおり」を、プログラミング知識なしで作成できるツールです。作成したしおりは <strong>Netlify Drop</strong> にドラッグ＆ドロップするだけで無料公開でき、<strong>検索エンジンにヒットしないための多重検索除け対策</strong>も自動で組み込まれます。
                     </p>
                 </section>
 
@@ -315,8 +305,8 @@
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：基本情報・写真を入力</span>
-                            <p class="text-xs text-slate-600">表紙や宿泊先を入力します。<strong>注意事項（CAUTION）と持ち物リストは初期状態から定番の例が入っている</strong>ため、合宿に合わせて不要なものを消したり追記したりするだけで完成します。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：基本情報・検索除け設定</span>
+                            <p class="text-xs text-slate-600">表紙やタイトルを入力し、必要に応じて<strong>「閲覧用パスコード（合言葉）」</strong>を設定します。注意事項と持ち物リストは初期状態から定番の例が入っています。</p>
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
                             <span class="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-xs mb-1">STEP 2：GoogleマップURLを貼るだけ</span>
@@ -324,55 +314,52 @@
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
                             <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 3：写真のドラッグ＆ドロップ</span>
-                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>すると自動リサイズされて埋め込まれます（Googleサイト上でもそのまま表示されます）。</p>
+                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>すると自動リサイズされてHTML内に埋め込まれます（外部画像サーバー不要）。</p>
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold text-xs mb-1">STEP 4：Googleサイトで公開・部員へ共有</span>
-                            <p class="text-xs text-slate-600">右上の<strong>「Googleサイト出力」</strong>からコードをコピーし、Googleサイトの「埋め込みコード」に貼り付けて公開すれば、部員にURLを流すだけでスマホから閲覧・チェックリスト利用ができます。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-teal-100 text-teal-700 font-bold text-xs mb-1">STEP 4：Netlify Dropで公開・共有</span>
+                            <p class="text-xs text-slate-600">右上の<strong>「HTML出力 (Netlify用)」</strong>からZIP（または<code>index.html</code>）をダウンロードし、Netlify Dropへドロップして発行されたURLをメンバーへ共有します。</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- Googleサイト運用専用ガイド -->
-                <section class="bg-blue-50/80 p-4 sm:p-5 rounded-2xl border border-blue-200 space-y-2.5">
-                    <h3 class="font-bold text-base text-blue-900 flex items-center gap-2">
-                        <i class="fab fa-google text-blue-600"></i>3. Googleサイトにエクスポートして部員に流す方法
+                <!-- Netlify Drop 運用専用ガイド -->
+                <section class="bg-teal-50/80 p-4 sm:p-5 rounded-2xl border border-teal-200 space-y-2.5">
+                    <h3 class="font-bold text-base text-teal-900 flex items-center gap-2">
+                        <i class="fas fa-cloud-upload-alt text-teal-600"></i>3. Netlify Drop での公開・更新方法
                     </h3>
-                    <ol class="text-xs sm:text-sm text-blue-950 space-y-2 list-decimal list-inside leading-relaxed">
-                        <li>ツール右上の青い<strong>「Googleサイト出力」</strong>ボタンをクリックし、<strong>「Googleサイト用コードをコピー」</strong>を押します。</li>
-                        <li><strong>Googleサイト（sites.google.com）</strong>を開き、部員共有用のページを作成します。</li>
-                        <li>画面右側のメニューから<strong>「挿入」＞「埋め込み」＞「埋め込みコード」</strong>タブを開き、コピーしたコードを貼り付けて「次へ」＞「挿入」をクリックします。</li>
-                        <li>ページ上に表示された埋め込み枠の左右・下のハンドルをドラッグし、<strong>画面幅いっぱい・縦に十分長く</strong>広げます（スクロールバーが出ないくらい縦に伸ばすとスマホでも非常に見やすくなります）。</li>
-                        <li>右上の<strong>「公開」</strong>ボタンを押してWebアドレスを設定し、そのURLを部員グループ（LINE・Discord・Slackなど）に共有します。</li>
+                    <ol class="text-xs sm:text-sm text-teal-950 space-y-2 list-decimal list-inside leading-relaxed">
+                        <li>ツール右上の<strong>「HTML出力 (Netlify用)」</strong>をクリックし、<strong>「検索除け完全パック (ZIP)」</strong>をダウンロードして解凍します（<code>index.html</code>・<code>robots.txt</code>・<code>_headers</code> が入ったフォルダができます）。</li>
+                        <li>ブラウザで <strong><a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="underline text-teal-700">https://app.netlify.com/drop</a></strong> を開きます（無料アカウント登録をすると公開URLが消えずにずっと維持され、後から上書き更新もできます）。</li>
+                        <li>画面中央の点線エリアに、<strong>解凍したフォルダを丸ごとドラッグ＆ドロップ</strong>します。</li>
+                        <li>数秒で <code>https://〇〇-〇〇-12345.netlify.app</code> のようなランダムURLが発行されるので、メンバーのLINE・Discord等に共有してください。</li>
+                        <li><strong>内容を修正したい場合：</strong> Netlifyの管理画面の「Deploys」タブに新しいフォルダを再度ドラッグ＆ドロップするだけで、<strong>同じURLのまま中身だけ更新</strong>できます。</li>
                     </ol>
-                    <p class="text-[11px] text-blue-800 bg-white/80 p-2.5 rounded-xl border border-blue-100">
-                        <i class="fas fa-check-circle text-blue-600 mr-1"></i>
-                        <strong>Googleサイト専用最適化：</strong>「Googleサイト出力」で生成されるコードは、Googleサイトの埋め込み枠内でもレイアウトが崩れず、Googleマップの経路案内や公式サイトリンクもブロックされずに新しいタブで開くよう自動調整されています。
+                </section>
+
+                <!-- 検索除け対策の解説 -->
+                <section class="bg-amber-50/80 p-4 sm:p-5 rounded-2xl border border-amber-200 space-y-2.5">
+                    <h3 class="font-bold text-base text-amber-950 flex items-center gap-2">
+                        <i class="fas fa-user-secret text-amber-600"></i>4. 検索除け（プライバシー保護）の4重の工夫
+                    </h3>
+                    <p class="text-xs sm:text-sm text-amber-950">
+                        合宿の日程や集合場所・宿泊先がGoogle等の検索結果に出ないよう、以下の4つの対策を組み込んでいます：
                     </p>
+                    <ul class="text-xs sm:text-sm text-amber-950 space-y-1.5 list-disc list-inside leading-relaxed">
+                        <li><strong>検索エンジン拒否メタタグ自動埋め込み：</strong> <code>noindex, nofollow, noarchive, nosnippet, noimageindex</code> をHTMLに自動挿入し、検索結果やキャッシュへの掲載を拒否します。</li>
+                        <li><strong>サーバー応答ヘッダ＆クローラー遮断ファイル同梱：</strong> 「検索除け完全パック (ZIP)」には Netlify 専用の <code>_headers</code>（<code>X-Robots-Tag: noindex</code>）と <code>robots.txt</code>（<code>Disallow: /</code>）が含まれており、クローラーの巡回自体を入口でブロックします。</li>
+                        <li><strong>リファラー情報遮断（no-referrer）：</strong> しおり内のGoogleマップや公式サイトリンクをメンバーがタップした際、リンク先サイトのアクセス解析に「しおりのURL」が送信されるのを防ぎます。</li>
+                        <li><strong>ランダムURL維持 ＆ 任意パスコードロック：</strong> Netlify Drop が自動生成するランダムURLをそのまま使い、さらに「基本・検索除け」タブで<strong>閲覧用パスコード（合言葉）</strong>を設定すると、合言葉を知らない人や検索ボットは本文を一切閲覧できなくなります。</li>
+                    </ul>
                 </section>
 
                 <section class="space-y-2">
                     <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
-                        <i class="fas fa-map-pin"></i>4. GoogleマップURLの貼り付けコツ
+                        <i class="fas fa-map-pin"></i>5. GoogleマップURLの貼り付けコツ
                     </h3>
                     <p class="text-xs sm:text-sm text-slate-600">
                         パソコンのブラウザでGoogleマップを開き、目的地（宿泊先やコンビニ・観光地）をクリックした状態で<strong>アドレスバーの長いURL（例：<code>https://www.google.com/maps/place/.../@34.75,139.00...</code>）</strong>をコピーして貼り付けると、ピンの座標まで100%自動で読み取ります。スマホの「共有」からコピーした短縮URL（<code>https://maps.app.goo.gl/...</code>）も経路リンクとしてそのまま利用できます。
                     </p>
-                </section>
-
-                <section class="space-y-2.5">
-                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
-                        <i class="fas fa-layer-group"></i>5. 各編集タブの機能一覧
-                    </h3>
-                    <ul class="space-y-1.5 text-xs sm:text-sm text-slate-600">
-                        <li><strong class="text-slate-800">・基本・表紙：</strong> タイトル、日程、行き先、表紙の背景写真、テーマカラー3色、フッター文言を設定します。</li>
-                        <li><strong class="text-slate-800">・PLAN：</strong> 宿泊先の名前・住所・<strong>GoogleマップURL</strong>・アクセス方法・集合場所を設定します。</li>
-                        <li><strong class="text-slate-800">・FACILITY：</strong> 館内間取り図・客室写真・共有設備ギャラリー・アメニティ一覧を編集します。</li>
-                        <li><strong class="text-slate-800">・SCHEDULE：</strong> <strong>「＋ 日程を追加」</strong>で1日目・2日目・3日目以降のタイムラインを作成できます。</li>
-                        <li><strong class="text-slate-800">・CAUTION：</strong> 時間厳守や貴重品管理などの注意事項カードを編集します（初期状態で定番例が入っています）。</li>
-                        <li><strong class="text-slate-800">・AREA：</strong> 周辺マップ（OpenStreetMap）のピンとスポットカードを<strong>GoogleマップURLを貼るだけ</strong>で追加・編集できます。</li>
-                        <li><strong class="text-slate-800">・持ち物：</strong> 部員がスマホでタップしてチェックできる持ち物リストを編集します（初期状態で定番例が入っています）。</li>
-                    </ul>
                 </section>
             </div>
 
@@ -393,7 +380,6 @@
 <script>
 /**
  * GoogleマップURL解析ヘルパー
- * ブラウザURL・共有URL・座標・施設名のいずれを入れても座標や検索クエリを自動抽出する
  */
 function parseGoogleMapsInput(rawInput) {
     const input = (rawInput || '').trim();
@@ -415,7 +401,7 @@ function parseGoogleMapsInput(rawInput) {
         lng = parseFloat(pinMatch[2]);
     }
 
-    // 2. 次点: @(緯度),(経度) パターン（ビューポート中心座標）
+    // 2. 次点: @(緯度),(経度) パターン
     if (lat === null || lng === null) {
         const atMatch = input.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
         if (atMatch) {
@@ -424,7 +410,7 @@ function parseGoogleMapsInput(rawInput) {
         }
     }
 
-    // 3. クエリパラメータ ?q=lat,lng または ll=lat,lng パターン
+    // 3. クエリパラメータ ?q=lat,lng または ll=lat,lng
     if (lat === null || lng === null) {
         const qCoordMatch = input.match(/[?&](?:q|ll|query)=(-?\d+\.\d+)(?:%2C|,)(-?\d+\.\d+)/i);
         if (qCoordMatch) {
@@ -433,7 +419,7 @@ function parseGoogleMapsInput(rawInput) {
         }
     }
 
-    // 4. 直接 "34.75405, 139.00159" と入力された場合
+    // 4. 直接座標入力
     if (!isUrl && lat === null) {
         const directCoordMatch = input.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
         if (directCoordMatch) {
@@ -442,7 +428,7 @@ function parseGoogleMapsInput(rawInput) {
         }
     }
 
-    // 5. URL内の /place/施設名/ または ?q=施設名 から検索用テキストを抽出
+    // 5. URL内の /place/施設名/ または ?q=施設名
     if (isUrl) {
         const placeMatch = input.match(/\/maps\/place\/([^\/?@#]+)/);
         if (placeMatch && placeMatch[1]) {
@@ -495,7 +481,7 @@ function parseGoogleMapsInput(rawInput) {
 
 /**
  * 初期画面用のテンプレートデータ
- * 注意事項と持ち物は初期状態でも実用的な例を読み込んだ状態にする
+ * 注意事項と持ち物は初期状態でも実用的な例を読み込んだ状態にし、検索除けもONにする
  */
 const EMPTY_SHIORI_DATA = {
     meta: {
@@ -513,7 +499,11 @@ const EMPTY_SHIORI_DATA = {
         footerTitle: "",
         footerMessage: "",
         footerCopyright: "",
-        storageKey: "customShioriChecklist"
+        storageKey: "customShioriChecklist",
+        enableNoIndex: true,
+        blockReferrer: true,
+        passcode: "",
+        passcodeHint: ""
     },
     plan: {
         hotelName: "",
@@ -663,7 +653,11 @@ const SAMPLE_SHIORI_DATA = {
         footerTitle: "HAPPY TRAVELS",
         footerMessage: "ルールを守って、最高の思い出を作りましょう！",
         footerCopyright: "© 2026 HAIKARA. All Trip Rights Reserved.",
-        storageKey: "haikaraChecklist2026"
+        storageKey: "haikaraChecklist2026",
+        enableNoIndex: true,
+        blockReferrer: true,
+        passcode: "",
+        passcodeHint: "例：LINEグループでお知らせした4桁の数字"
     },
     plan: {
         hotelName: "サンライズガーデン",
@@ -1059,6 +1053,12 @@ const SAMPLE_SHIORI_DATA = {
 // データ構造の互換マイグレーション
 function normalizeShioriData(raw) {
     const data = JSON.parse(JSON.stringify(raw));
+    if (data.meta) {
+        if (data.meta.enableNoIndex === undefined) data.meta.enableNoIndex = true;
+        if (data.meta.blockReferrer === undefined) data.meta.blockReferrer = true;
+        if (data.meta.passcode === undefined) data.meta.passcode = "";
+        if (data.meta.passcodeHint === undefined) data.meta.passcodeHint = "";
+    }
     if (data.schedule && !Array.isArray(data.schedule.days)) {
         data.schedule = {
             days: [
@@ -1087,15 +1087,14 @@ function normalizeShioriData(raw) {
     return data;
 }
 
-// アプリケーション状態（初期画面でも注意事項と持ち物はサンプル入り）
+// アプリケーション状態
 let appData = normalizeShioriData(EMPTY_SHIORI_DATA);
 let currentTab = 'basic';
 let previewUpdateTimer = null;
-let currentExportMode = 'gsites'; // 'gsites' | 'html'
 
 // ローカルストレージから前回の編集状態を復元
 try {
-    const saved = localStorage.getItem('shioriGeneratorDraft_v4');
+    const saved = localStorage.getItem('shioriGeneratorDraft_v5');
     if (saved) {
         appData = normalizeShioriData(JSON.parse(saved));
     }
@@ -1157,9 +1156,29 @@ function showCustomConfirm(title, message, onConfirm) {
     newCancel.addEventListener('click', cleanup);
 }
 
+function updateSecurityBadgeUI() {
+    const badge = document.getElementById('preview-security-badge');
+    if (!badge) return;
+    const m = appData.meta;
+    if (m.enableNoIndex && m.passcode && m.passcode.trim() !== '') {
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold';
+        badge.innerHTML = '<i class="fas fa-shield-alt"></i>検索除け＋合言葉ロック有効';
+    } else if (m.enableNoIndex) {
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold';
+        badge.innerHTML = '<i class="fas fa-user-secret"></i>検索除けON';
+    } else if (m.passcode && m.passcode.trim() !== '') {
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold';
+        badge.innerHTML = '<i class="fas fa-lock"></i>合言葉ロック有効';
+    } else {
+        badge.className = 'hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold';
+        badge.innerHTML = '<i class="fas fa-globe"></i>通常公開設定';
+    }
+}
+
 function saveDraftAndRefreshPreview(immediate = false) {
+    updateSecurityBadgeUI();
     try {
-        localStorage.setItem('shioriGeneratorDraft_v4', JSON.stringify(appData));
+        localStorage.setItem('shioriGeneratorDraft_v5', JSON.stringify(appData));
     } catch (e) {
         // 画像サイズが大きすぎる場合など
     }
@@ -1390,6 +1409,48 @@ function renderEditorTab(tab) {
                     <button type="button" onclick="loadSampleDataWithConfirm()" class="px-2.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white text-[11px] font-bold whitespace-nowrap transition shadow-sm">
                         例を読み込む
                     </button>
+                </div>
+
+                <!-- 検索除け・プライバシー保護設定 -->
+                <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 space-y-3">
+                    <h2 class="text-sm font-bold text-emerald-950 flex items-center gap-2">
+                        <i class="fas fa-user-secret text-emerald-600 text-base"></i>検索除け・プライバシー保護設定（Netlify Drop運用向け）
+                    </h2>
+                    <div class="space-y-2.5">
+                        <label class="flex items-start gap-2.5 cursor-pointer bg-white/90 p-2.5 rounded-xl border border-emerald-200/80">
+                            <input type="checkbox" ${m.enableNoIndex ? 'checked' : ''} onchange="updateDataByPath('meta.enableNoIndex', this.checked)" class="mt-0.5 rounded text-emerald-600">
+                            <div class="text-xs">
+                                <span class="font-bold text-slate-800 block">検索エンジンに載せない（noindex / nofollow / noarchive）</span>
+                                <span class="text-[11px] text-slate-500">GoogleやYahoo!等の検索結果・キャッシュ・画像検索から除外します（推奨ON）。</span>
+                            </div>
+                        </label>
+
+                        <label class="flex items-start gap-2.5 cursor-pointer bg-white/90 p-2.5 rounded-xl border border-emerald-200/80">
+                            <input type="checkbox" ${m.blockReferrer ? 'checked' : ''} onchange="updateDataByPath('meta.blockReferrer', this.checked)" class="mt-0.5 rounded text-emerald-600">
+                            <div class="text-xs">
+                                <span class="font-bold text-slate-800 block">リンク先へのURL流出を防ぐ（no-referrer）</span>
+                                <span class="text-[11px] text-slate-500">外部リンクを踏んだ際、相手サイトのアクセス解析に「しおりのURL」が伝わるのを遮断します。</span>
+                            </div>
+                        </label>
+
+                        <div class="bg-white/90 p-3 rounded-xl border border-emerald-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                    <i class="fas fa-lock text-amber-500"></i>閲覧用パスコード（合言葉）ロック（任意）
+                                </label>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full ${m.passcode ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500'}">
+                                    ${m.passcode ? 'ロック有効' : '未設定（誰でも閲覧可）'}
+                                </span>
+                            </div>
+                            <input type="text" value="${escapeHtml(m.passcode)}" placeholder="空欄ならロックなし（例：2026summer）" oninput="updateDataByPath('meta.passcode', this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600">
+                            ${m.passcode ? `
+                                <input type="text" value="${escapeHtml(m.passcodeHint)}" placeholder="合言葉のヒント（例：LINEグループでお知らせした合言葉）" oninput="updateDataByPath('meta.passcodeHint', this.value)" class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-600">
+                            ` : ''}
+                            <p class="text-[10px] text-slate-500 leading-relaxed">
+                                ※合言葉を設定すると、URLを知っている人でも合言葉を入力するまで日程や宿泊先が表示されず、検索ボットも中身を読み取れなくなります（プレビュー画面では編集しやすいよう自動解除されています）。
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -2151,13 +2212,12 @@ function loadSampleDataWithConfirm() {
 }
 
 /**
- * 完全なスタンドアロンHTML / Googleサイト埋め込み用HTMLコードを生成するジェネレーターエンジン
+ * 完全なスタンドアロンHTMLコードを生成するジェネレーターエンジン（Netlify Drop & 検索除け対応）
  * @param {object} data しおりデータ
- * @param {object} options { isPreviewMode: boolean, forGoogleSites: boolean }
+ * @param {object} options { isPreviewMode: boolean }
  */
 function generateShioriHTML(data, options = {}) {
     const isPreviewMode = Boolean(options.isPreviewMode);
-    const forGoogleSites = Boolean(options.forGoogleSites);
 
     const m = data.meta;
     const p = data.plan;
@@ -2166,7 +2226,6 @@ function generateShioriHTML(data, options = {}) {
     const cList = data.cautions;
     const ag = data.areaGuide;
 
-    // プレビュー時のみ未入力箇所に薄いガイド文を表示するためのヘルパー
     const valOrGuide = (val, guideText) => {
         if (val && String(val).trim() !== '') return escapeHtml(val);
         return isPreviewMode ? `<span class="opacity-45">${escapeHtml(guideText)}</span>` : '';
@@ -2178,6 +2237,17 @@ function generateShioriHTML(data, options = {}) {
         }
         return src;
     };
+
+    // 検索除け・プライバシーメタタグ生成
+    const antiSearchMetaTags = m.enableNoIndex ? `
+    <!-- 検索エンジン除外（検索除け）設定 -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">` : '';
+
+    const referrerMetaTag = m.blockReferrer ? `
+    <!-- 外部リンク遷移時の参照元URL流出防止 -->
+    <meta name="referrer" content="no-referrer">` : '';
 
     // Googleマップの埋め込みURLおよび外部リンクURLを解決
     const parsedHotelMap = parseGoogleMapsInput(p.mapUrl || p.mapQuery);
@@ -2382,71 +2452,73 @@ ${eventsHtml}
         ? checklistDisplayItems
         : (isPreviewMode ? ['（持ち物リストを追加するとここに表示されます）'] : []);
 
-    // Googleサイト埋め込みモード用のレイアウト最適化クラス
-    const navHtml = forGoogleSites ? `
-<!-- Google Sites Sticky Section Navigation -->
-<nav class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 py-1.5" id="navbar">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-12">
-            <div class="flex-shrink-0">
-                <a href="#top" class="font-serif text-lg font-bold text-primary transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
-            </div>
-            <div class="flex items-center space-x-3 sm:space-x-5 font-medium text-xs sm:text-sm overflow-x-auto hide-scrollbar py-1">
-                <a href="#plan" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">PLAN</a>
-                <a href="#facility" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">FACILITY</a>
-                <a href="#schedule" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">SCHEDULE</a>
-                <a href="#caution" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">CAUTION</a>
-                <a href="#area-guide" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">AREA</a>
-                <a href="#checklist" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">持ち物</a>
-            </div>
+    // 閲覧用パスコードロック画面（合言葉が設定されており、かつプレビューモードでない場合のみ有効化）
+    const activePasscode = (!isPreviewMode && m.passcode && m.passcode.trim() !== '') ? m.passcode.trim() : '';
+    const passcodeGateHtml = activePasscode ? `
+<!-- 検索除け＆限定公開用パスコードゲート -->
+<div id="passcode-gate" class="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-7 text-center space-y-5 border border-gray-100">
+        <div class="w-16 h-16 rounded-2xl bg-primary/15 text-primary flex items-center justify-center mx-auto text-2xl">
+            <i class="fas fa-lock"></i>
         </div>
-    </div>
-</nav>` : `
-<!-- Navigation -->
-<nav class="fixed w-full z-50 transition-all duration-300 py-2" id="navbar">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <div class="flex-shrink-0">
-                <a href="#" class="font-serif text-xl font-bold text-white drop-shadow-md transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
-            </div>
-            <div class="hidden md:block">
-                <div class="ml-10 flex items-baseline space-x-5 lg:space-x-6 font-medium text-sm lg:text-base">
-                    <a href="#plan" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">PLAN</a>
-                    <a href="#facility" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">FACILITY</a>
-                    <a href="#schedule" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">SCHEDULE</a>
-                    <a href="#caution" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CAUTION</a>
-                    <a href="#area-guide" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">AREA GUIDE</a>
-                    <a href="#checklist" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CHECK LIST</a>
-                </div>
-            </div>
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-btn" class="text-white hover:text-primary focus:outline-none drop-shadow-md transition-colors nav-btn">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
+        <div>
+            <p class="text-xs font-bold tracking-widest text-primary uppercase mb-1">PRIVATE TRAVEL NOTE</p>
+            <h2 class="font-serif text-2xl font-bold text-textDark">${escapeHtml(m.heroTitle || '旅のしおり')}</h2>
+            <p class="text-xs text-textLight mt-2">メンバー限定ページです。共有された合言葉（パスコード）を入力してください。</p>
         </div>
-    </div>
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full left-0 top-full border-t border-gray-100">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
-            <a href="#plan" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">PLAN (旅の基本)</a>
-            <a href="#facility" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">FACILITY (施設)</a>
-            <a href="#schedule" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">SCHEDULE (日程)</a>
-            <a href="#caution" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CAUTION (注意)</a>
-            <a href="#area-guide" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">AREA GUIDE (周辺・アクセス)</a>
-            <a href="#checklist" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CHECK LIST (持ち物)</a>
+        <div class="space-y-2.5 text-left">
+            <input type="password" id="passcode-input" placeholder="合言葉を入力" onkeydown="if(event.key==='Enter'){verifyShioriPasscode();}" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:border-primary">
+            ${m.passcodeHint ? `<p class="text-[11px] text-gray-500 text-center"><i class="fas fa-lightbulb text-amber-400 mr-1"></i>ヒント：${escapeHtml(m.passcodeHint)}</p>` : ''}
+            <p id="passcode-error" class="hidden text-xs text-red-500 font-bold text-center">合言葉が正しくありません</p>
         </div>
+        <button type="button" onclick="verifyShioriPasscode()" class="w-full py-3 rounded-xl bg-primary hover:opacity-90 text-white font-bold text-sm shadow-md transition">
+            しおりを開く
+        </button>
     </div>
-</nav>`;
+</div>` : '';
 
-    const heroHeightClass = forGoogleSites ? 'min-h-[480px] md:min-h-[560px] py-20' : 'h-screen';
+    const passcodeGateScript = activePasscode ? `
+    // パスコード認証ロジック
+    const SHIORI_PASSCODE = ${JSON.stringify(activePasscode)};
+    const PASSCODE_STORAGE_KEY = ${JSON.stringify((m.storageKey || 'shioriChecklist') + '_unlocked')};
+
+    function unlockShioriGate() {
+        const gate = document.getElementById('passcode-gate');
+        if (gate) gate.style.display = 'none';
+        document.body.style.overflow = '';
+        if (typeof areaMap !== 'undefined' && areaMap) {
+            setTimeout(() => areaMap.invalidateSize(), 150);
+        }
+    }
+
+    function verifyShioriPasscode() {
+        const input = document.getElementById('passcode-input');
+        const err = document.getElementById('passcode-error');
+        if (!input) return;
+        if (input.value.trim() === SHIORI_PASSCODE) {
+            try { sessionStorage.setItem(PASSCODE_STORAGE_KEY, '1'); } catch (e) {}
+            unlockShioriGate();
+        } else {
+            if (err) err.classList.remove('hidden');
+            input.classList.add('border-red-400');
+        }
+    }
+
+    try {
+        if (sessionStorage.getItem(PASSCODE_STORAGE_KEY) === '1') {
+            unlockShioriGate();
+        } else {
+            document.body.style.overflow = 'hidden';
+        }
+    } catch (e) {
+        document.body.style.overflow = 'hidden';
+    }` : '';
 
     return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">${antiSearchMetaTags}${referrerMetaTag}
     <title>${escapeHtml(m.pageTitle || '旅のしおり')}</title>
     
     <!-- Tailwind CSS -->
@@ -2497,7 +2569,7 @@ ${eventsHtml}
             background-image: ${heroBgCss};
             background-size: cover;
             background-position: center;
-            background-attachment: ${(isPreviewMode || forGoogleSites) ? 'scroll' : 'fixed'};
+            background-attachment: ${isPreviewMode ? 'scroll' : 'fixed'};
         }
 
         .section-title {
@@ -2556,10 +2628,48 @@ ${eventsHtml}
 </head>
 <body id="top" class="antialiased relative">
 
-${navHtml}
+${passcodeGateHtml}
+
+<!-- Navigation -->
+<nav class="fixed w-full z-50 transition-all duration-300 py-2" id="navbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex-shrink-0">
+                <a href="#" class="font-serif text-xl font-bold text-white drop-shadow-md transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-5 lg:space-x-6 font-medium text-sm lg:text-base">
+                    <a href="#plan" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">PLAN</a>
+                    <a href="#facility" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">FACILITY</a>
+                    <a href="#schedule" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">SCHEDULE</a>
+                    <a href="#caution" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CAUTION</a>
+                    <a href="#area-guide" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">AREA GUIDE</a>
+                    <a href="#checklist" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CHECK LIST</a>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-btn" class="text-white hover:text-primary focus:outline-none drop-shadow-md transition-colors nav-btn">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full left-0 top-full border-t border-gray-100">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+            <a href="#plan" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">PLAN (旅の基本)</a>
+            <a href="#facility" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">FACILITY (施設)</a>
+            <a href="#schedule" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">SCHEDULE (日程)</a>
+            <a href="#caution" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CAUTION (注意)</a>
+            <a href="#area-guide" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">AREA GUIDE (周辺・アクセス)</a>
+            <a href="#checklist" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CHECK LIST (持ち物)</a>
+        </div>
+    </div>
+</nav>
 
 <!-- Hero Section -->
-<header class="hero-bg ${heroHeightClass} flex items-center justify-center relative">
+<header class="hero-bg h-screen flex items-center justify-center relative">
     <div class="text-center px-4 fade-in visible">
         <p class="text-white text-lg md:text-xl mb-2 tracking-widest font-light">${valOrGuide(m.heroSubtitle, 'TRAVEL NOTE')}</p>
         <h1 class="font-serif text-4xl sm:text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">${valOrGuide(m.heroTitle, '旅のしおりタイトル')}</h1>
@@ -2629,7 +2739,7 @@ ${navHtml}
                 <div>
                     <h4 class="text-xl font-bold mb-4 flex items-center text-primary"><i class="fas fa-map-marker-alt mr-2"></i>宿泊先マップ</h4>
                     <div class="w-full h-64 sm:h-80 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-3">
-                        <iframe src="https://maps.google.com/maps?q=${hotelEmbedQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="https://maps.google.com/maps?q=${hotelEmbedQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer"></iframe>
                     </div>
                     <div class="text-right">
                         <a href="${escapeHtml(hotelExternalMapUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white px-5 py-2 rounded-full transition-colors border border-primary/20 text-sm shadow-sm">
@@ -2867,8 +2977,7 @@ ${renderCategoryCards('gourmet')}
     </div>
 </div>
 
-<script>
-    ${!forGoogleSites ? `
+<script>${passcodeGateScript}
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -2912,7 +3021,6 @@ ${renderCategoryCards('gourmet')}
             });
         });
     }
-    ` : ''}
 
     // Fade-in Animation Observer
     const observerOptions = {
@@ -2997,7 +3105,6 @@ ${renderCategoryCards('gourmet')}
 
         updateMapMarkers('all');
 
-        // Googleサイト等のiframe内でマップ描画サイズがずれるのを防止
         setTimeout(() => {
             if (areaMap) {
                 areaMap.invalidateSize();
@@ -3174,7 +3281,7 @@ function updatePreviewIframe() {
         }
     } catch (e) {}
 
-    const htmlCode = generateShioriHTML(appData, { isPreviewMode: true, forGoogleSites: false });
+    const htmlCode = generateShioriHTML(appData, { isPreviewMode: true });
     iframe.srcdoc = htmlCode;
     iframe.onload = () => {
         try {
@@ -3186,46 +3293,91 @@ function updatePreviewIframe() {
 }
 
 /**
- * 出力モーダルのモード切り替え
+ * HTML出力モーダルを開く（Netlify Drop 公開＆検索除けパッケージ）
  */
-function openExportModal(mode = 'gsites') {
+function openExportModal() {
     const exportModal = document.getElementById('export-modal');
-    switchExportMode(mode);
+    const codeArea = document.getElementById('generated-code-area');
+    const summaryEl = document.getElementById('export-security-summary');
+
+    codeArea.value = generateShioriHTML(appData, { isPreviewMode: false });
+
+    const m = appData.meta;
+    const statusBadges = [];
+    if (m.enableNoIndex) {
+        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>検索エンジン除外 (noindex) 有効</span>');
+    } else {
+        statusBadges.push('<span class="text-amber-700"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>検索エンジン除外 OFF</span>');
+    }
+    if (m.blockReferrer) {
+        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>参照元URL秘匿 (no-referrer) 有効</span>');
+    }
+    if (m.passcode && m.passcode.trim() !== '') {
+        statusBadges.push(`<span class="text-emerald-700 font-bold"><i class="fas fa-lock text-amber-500 mr-1"></i>合言葉ロック有効（合言葉：<code>${escapeHtml(m.passcode.trim())}</code>）</span>`);
+    } else {
+        statusBadges.push('<span class="text-slate-500"><i class="fas fa-unlock mr-1"></i>合言葉ロックなし（ランダムURL限定公開）</span>');
+    }
+    summaryEl.innerHTML = statusBadges.join('');
+
     exportModal.classList.remove('hidden');
     exportModal.classList.add('flex');
 }
 
-function switchExportMode(mode) {
-    currentExportMode = mode;
-    const codeArea = document.getElementById('generated-code-area');
-    const tabGsites = document.getElementById('tab-export-gsites');
-    const tabHtml = document.getElementById('tab-export-html');
-    const guideGsites = document.getElementById('guide-export-gsites');
-    const guideHtml = document.getElementById('guide-export-html');
-    const modalIcon = document.getElementById('export-modal-icon');
-    const modalTitle = document.getElementById('export-modal-title');
-    const modalSubtitle = document.getElementById('export-modal-subtitle');
+/**
+ * Netlify Drop 用検索除け完全パック (ZIP) を生成・ダウンロード
+ */
+async function downloadNetlifyZipPackage() {
+    if (typeof JSZip === 'undefined') {
+        showToast('ZIP生成ライブラリの読み込みに失敗しました。「index.html 単体保存」をご利用ください。', true);
+        return;
+    }
+    try {
+        const zip = new JSZip();
+        const folder = zip.folder('shiori-netlify-drop');
 
-    if (mode === 'gsites') {
-        codeArea.value = generateShioriHTML(appData, { isPreviewMode: false, forGoogleSites: true });
-        tabGsites.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-blue-600 text-blue-700 bg-white flex items-center gap-1.5 transition';
-        tabHtml.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition';
-        guideGsites.classList.remove('hidden');
-        guideHtml.classList.add('hidden');
-        modalIcon.className = 'w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm';
-        modalIcon.innerHTML = '<i class="fab fa-google text-lg"></i>';
-        modalTitle.textContent = 'Googleサイト埋め込み用コード出力';
-        modalSubtitle.textContent = 'Googleサイトの「埋め込みコード」に貼り付けて部員に共有できます';
-    } else {
-        codeArea.value = generateShioriHTML(appData, { isPreviewMode: false, forGoogleSites: false });
-        tabHtml.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-indigo-600 text-indigo-700 bg-white flex items-center gap-1.5 transition';
-        tabGsites.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition';
-        guideHtml.classList.remove('hidden');
-        guideGsites.classList.add('hidden');
-        modalIcon.className = 'w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm';
-        modalIcon.innerHTML = '<i class="fas fa-code text-lg"></i>';
-        modalTitle.textContent = '単体HTMLファイル (index.html) 出力';
-        modalSubtitle.textContent = 'この1ファイルだけでデザイン・地図・チェックリストすべてが動作します';
+        // 1. index.html
+        const htmlContent = generateShioriHTML(appData, { isPreviewMode: false });
+        folder.file('index.html', htmlContent);
+
+        // 2. robots.txt（全検索クローラー巡回拒否）
+        const robotsTxt = [
+            'User-agent: *',
+            'Disallow: /',
+            '',
+            'User-agent: Googlebot',
+            'Disallow: /',
+            '',
+            'User-agent: Bingbot',
+            'Disallow: /',
+            '',
+            'User-agent: GPTBot',
+            'Disallow: /'
+        ].join('\n');
+        folder.file('robots.txt', robotsTxt);
+
+        // 3. _headers（Netlify専用 HTTPレスポンスヘッダ制御ファイル）
+        const headersRules = [
+            '/*',
+            '  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex'
+        ];
+        if (appData.meta.blockReferrer) {
+            headersRules.push('  Referrer-Policy: no-referrer');
+        }
+        folder.file('_headers', headersRules.join('\n') + '\n');
+
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'shiori-netlify-drop.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('検索除け完全パック (shiori-netlify-drop.zip) をダウンロードしました！解凍してフォルダごとNetlify Dropへドロップしてください');
+    } catch (err) {
+        console.error(err);
+        showToast('ZIPの生成に失敗しました。「index.html 単体保存」をお試しください。', true);
     }
 }
 
@@ -3301,36 +3453,27 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('プレビューを再読み込みしました');
     });
 
-    // コード出力モーダル（Googleサイト出力 / HTML出力）
+    // HTML出力モーダル（Netlify Drop用）
     const exportModal = document.getElementById('export-modal');
     const codeArea = document.getElementById('generated-code-area');
 
-    document.getElementById('btn-export-gsites').addEventListener('click', () => openExportModal('gsites'));
-    document.getElementById('btn-export-html').addEventListener('click', () => openExportModal('html'));
-    document.getElementById('tab-export-gsites').addEventListener('click', () => switchExportMode('gsites'));
-    document.getElementById('tab-export-html').addEventListener('click', () => switchExportMode('html'));
+    document.getElementById('btn-export-html').addEventListener('click', openExportModal);
 
     document.getElementById('close-export-modal').addEventListener('click', () => {
         exportModal.classList.add('hidden');
         exportModal.classList.remove('flex');
     });
 
-    const copyGeneratedCode = (successMsg) => {
+    document.getElementById('btn-download-zip').addEventListener('click', downloadNetlifyZipPackage);
+
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
         codeArea.select();
         try {
             document.execCommand('copy');
-            showToast(successMsg);
+            showToast('HTMLコードをクリップボードにコピーしました！');
         } catch (err) {
             showToast('コピーに失敗しました。手動で選択してコピーしてください。', true);
         }
-    };
-
-    document.getElementById('btn-copy-gsites-code').addEventListener('click', () => {
-        copyGeneratedCode('Googleサイト用埋め込みコードをコピーしました！Googleサイトの「埋め込みコード」に貼り付けてください');
-    });
-
-    document.getElementById('btn-copy-code').addEventListener('click', () => {
-        copyGeneratedCode('HTMLコードをクリップボードにコピーしました！');
     });
 
     document.getElementById('btn-download-html').addEventListener('click', () => {
@@ -3343,7 +3486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('index.html をダウンロードしました！');
+        showToast('index.html をダウンロードしました！フォルダに入れてNetlify Dropへドロップしてください');
     });
 
     // JSONデータ保存・復元モーダル
@@ -3435,7 +3578,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'これまでの入力内容がクリアされ、初期状態に戻ります（注意事項と持ち物の基本例は残ります）。よろしいですか？',
             () => {
                 appData = normalizeShioriData(EMPTY_SHIORI_DATA);
-                localStorage.removeItem('shioriGeneratorDraft_v4');
+                localStorage.removeItem('shioriGeneratorDraft_v5');
+                updateSecurityBadgeUI();
                 renderEditorTab(currentTab);
                 updatePreviewIframe();
                 showToast('初期状態に戻しました（注意事項・持ち物の基本例は読み込み済み）');
@@ -3444,6 +3588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 初期描画
+    updateSecurityBadgeUI();
     renderEditorTab('basic');
     updatePreviewIframe();
 });
