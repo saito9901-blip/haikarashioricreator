@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅のしおり Webページ作成ジェネレーター</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', '"Zen Kaku Gothic New"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Zen Kaku Gothic New', sans-serif;
+            background-color: #f1f5f9;
+        }
+        /* カスタムスクロールバー */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .tab-btn.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- トップヘッダー -->
+    <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 flex items-center justify-between flex-shrink-0 z-30 shadow-sm">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+                <i class="fas fa-book-open text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm sm:text-base text-slate-800 leading-tight">旅のしおり Webページ作成ツール</h1>
+                <p class="text-[11px] text-slate-500 hidden sm:block">文字・写真を編集して、そのまま公開できるHTMLコードを生成します</p>
+            </div>
+        </div>
+
+        <!-- モバイル表示切り替えタブ -->
+        <div class="flex lg:hidden bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button id="mobile-view-edit" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm transition">
+                <i class="fas fa-edit mr-1"></i>編集
+            </button>
+            <button id="mobile-view-preview" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 transition">
+                <i class="fas fa-eye mr-1"></i>プレビュー
+            </button>
+        </div>
+
+        <!-- アクションボタン群 -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <button id="btn-help" title="ツールの使い方・説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
+                <i class="fas fa-question-circle text-indigo-500"></i>
+                <span class="hidden md:inline">説明書</span>
+            </button>
+            <button id="btn-load-sample" title="夏合宿のしおりサンプルを読み込む" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold transition flex items-center gap-1.5">
+                <i class="fas fa-magic text-amber-500"></i>
+                <span class="hidden sm:inline">サンプル読込</span>
+            </button>
+            <button id="btn-reset" title="白紙（初期状態）に戻す" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-red-600 text-xs font-medium transition flex items-center gap-1.5">
+                <i class="fas fa-file-alt"></i>
+                <span class="hidden md:inline">新規白紙</span>
+            </button>
+            <button id="btn-json-io" title="編集データの保存・読込" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5">
+                <i class="fas fa-file-code"></i>
+                <span class="hidden xl:inline">データ保存/読込</span>
+            </button>
+            <button id="btn-export-html" class="px-3.5 py-2 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fas fa-code"></i>
+                <span>HTML出力</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- メインワークスペース -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- 左側：編集パネル -->
+        <aside id="editor-pane" class="w-full lg:w-[460px] xl:w-[500px] bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 z-20">
+            <!-- セクションナビゲーションタブ -->
+            <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex gap-1.5 overflow-x-auto flex-shrink-0">
+                <button class="tab-btn active px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5" data-tab="basic">
+                    <i class="fas fa-palette"></i>基本・表紙
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="plan">
+                    <i class="fas fa-hotel"></i>PLAN
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="facility">
+                    <i class="fas fa-bath"></i>FACILITY
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="schedule">
+                    <i class="fas fa-clock"></i>SCHEDULE
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="caution">
+                    <i class="fas fa-exclamation-triangle"></i>CAUTION
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="area">
+                    <i class="fas fa-map-marked-alt"></i>AREA
+                </button>
+                <button class="tab-btn px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center gap-1.5" data-tab="checklist">
+                    <i class="fas fa-check-square"></i>持ち物
+                </button>
+            </div>
+
+            <!-- 編集フォームコンテンツエリア -->
+            <div id="editor-form-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6 pb-20">
+                <!-- JavaScriptによって動的に描画 -->
+            </div>
+        </aside>
+
+        <!-- 右側：リアルタイムプレビューパネル -->
+        <main id="preview-pane" class="hidden lg:flex flex-1 flex-col bg-slate-200/80 h-full overflow-hidden">
+            <!-- プレビューツールバー -->
+            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>リアルタイムプレビュー</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                    <button id="preview-mode-desktop" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-600 transition" title="PC・タブレット表示">
+                        <i class="fas fa-desktop mr-1"></i>PC幅
+                    </button>
+                    <button id="preview-mode-mobile" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition" title="スマートフォン表示">
+                        <i class="fas fa-mobile-alt mr-1"></i>スマホ幅
+                    </button>
+                    <button id="preview-refresh" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-indigo-600 border-l border-slate-200 ml-1 pl-2.5 transition" title="プレビューを再描画">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- iframe コンテナ -->
+            <div class="flex-1 overflow-auto p-2 sm:p-4 flex justify-center items-start">
+                <div id="preview-frame-wrapper" class="w-full h-full bg-white rounded-2xl shadow-xl border border-slate-300/80 overflow-hidden transition-all duration-300">
+                    <iframe id="preview-iframe" class="w-full h-full border-0" title="しおりプレビュー"></iframe>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- HTMLコード出力モーダル -->
+    <div id="export-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-code text-indigo-600"></i>生成されたHTMLコード
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">この1ファイルだけで、デザイン・地図・チェックリストすべてが動作します。</p>
+                </div>
+                <button id="close-export-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 sm:p-6 flex-1 overflow-hidden flex flex-col gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-indigo-50/70 p-3 rounded-2xl border border-indigo-100">
+                    <div class="text-xs text-indigo-900">
+                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>
+                        画像をファイルアップロードした場合はHTML内に直接埋め込まれます。ファイル名指定（例: <code class="bg-white px-1.5 py-0.5 rounded">image.jpg</code>）の場合は同じフォルダに画像を配置してください。
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-copy-code" class="px-4 py-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <i class="far fa-copy"></i>コードをコピー
+                        </button>
+                        <button id="btn-download-html" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <i class="fas fa-download"></i>index.html をダウンロード
+                        </button>
+                    </div>
+                </div>
+
+                <textarea id="generated-code-area" readonly class="w-full flex-1 font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSONデータ保存・読込モーダル -->
+    <div id="json-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-database text-indigo-600"></i>プロジェクトデータの保存・復元 (JSON)
+                </h2>
+                <button id="close-json-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-5 flex-1 overflow-y-auto space-y-4">
+                <p class="text-xs text-slate-600">現在の編集内容をJSONデータとして保存したり、以前保存したJSONデータを貼り付けて復元したりできます。</p>
+                <div class="flex flex-wrap gap-2">
+                    <button id="btn-copy-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                        <i class="far fa-copy mr-1"></i>JSONをコピー
+                    </button>
+                    <button id="btn-download-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                        <i class="fas fa-download mr-1"></i>JSONファイル保存
+                    </button>
+                    <label class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition cursor-pointer">
+                        <i class="fas fa-upload mr-1"></i>JSONファイル読込
+                        <input type="file" id="input-upload-json" accept=".json" class="hidden">
+                    </label>
+                </div>
+                <textarea id="json-data-area" class="w-full h-64 font-mono text-xs bg-slate-50 text-slate-800 p-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
+                <div class="flex justify-end">
+                    <button id="btn-apply-json" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                        <i class="fas fa-check mr-1"></i>このJSONデータを反映する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- カスタム確認モーダル（confirm()の代替） -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4">
+            <h3 id="confirm-title" class="font-bold text-lg text-slate-800">確認</h3>
+            <p id="confirm-message" class="text-sm text-slate-600 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="confirm-cancel" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold transition">キャンセル</button>
+                <button id="confirm-ok" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition">実行する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使い方・説明書モーダル -->
+    <div id="help-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-indigo-50/70">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg text-slate-800">旅のしおり Webページ作成ツール 説明書</h2>
+                        <p class="text-xs text-slate-500">基本的な使い方から公開・共有方法までのガイド</p>
+                    </div>
+                </div>
+                <button id="close-help-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 sm:p-7 flex-1 overflow-y-auto space-y-6 text-sm text-slate-700 leading-relaxed">
+                <section class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                    <h3 class="font-bold text-base text-indigo-700 mb-2 flex items-center gap-2">
+                        <i class="fas fa-sparkles"></i>1. このツールについて
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-600">
+                        合宿や旅行の「Webしおり」を、HTMLやプログラミングの知識なしで作成できるツールです。左側のフォームに文字や写真を入れるだけで右側にリアルタイムでプレビューが表示され、最後に<strong>1つのHTMLファイル（index.html）</strong>として出力できます。
+                    </p>
+                </section>
+
+                <section class="space-y-3">
+                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
+                        <i class="fas fa-shoe-prints"></i>2. 基本的な作成手順（4ステップ）
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：入力またはサンプル読込</span>
+                            <p class="text-xs text-slate-600">各入力欄の薄い文字（例）を参考に文字を入力します。完成イメージを先に見たい場合は、上部ヘッダーの<strong>「サンプル読込」</strong>を押すと「HAIKARA 夏合宿のしおり」の例が読み込まれます。</p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 2：写真のドラッグ＆ドロップ</span>
+                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>（または「写真を選択」）すると自動リサイズされてHTMLに埋め込まれます。</p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 3：日程・スポット・持ち物の調整</span>
+                            <p class="text-xs text-slate-600">上部のタブを切り替えて、1日目・2日目・3日目のスケジュール追加、周辺スポットのピン位置調整、持ち物リストの追加・削除を行います。</p>
+                        </div>
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 4：HTML出力とメンバーへの共有</span>
+                            <p class="text-xs text-slate-600">右上の<strong>「HTML出力」</strong>から <code>index.html</code> をダウンロードします。LINE等でファイルを直接送るか、Webサーバー・GitHub Pages等にアップロードしてURLを共有します。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-2.5">
+                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
+                        <i class="fas fa-layer-group"></i>3. 各編集タブの機能ガイド
+                    </h3>
+                    <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
+                        <li><strong class="text-slate-800">・基本・表紙：</strong> タイトル、日程、行き先、表紙の背景写真、全体のテーマカラー3色、フッター文言を設定します。</li>
+                        <li><strong class="text-slate-800">・PLAN：</strong> 宿泊先の名前・住所・Googleマップ検索ワード・アクセス方法、初日の集合時間や集合場所を設定します。</li>
+                        <li><strong class="text-slate-800">・FACILITY：</strong> 館内間取り図や客室写真、共有設備ギャラリー（カードの追加・削除可）、アメニティ一覧、注意事項を編集します。</li>
+                        <li><strong class="text-slate-800">・SCHEDULE：</strong> <strong>「＋ 日程を追加」</strong>で1日目だけでなく2日目・3日目以降のタイムラインも自由に作成できます。また、2日目・3日目を「タップして確認」の折りたたみ案内ボックスにする切り替えも可能です。</li>
+                        <li><strong class="text-slate-800">・CAUTION：</strong> 時間厳守や貴重品管理などの注意事項カードを色・アイコン付きで追加・削除できます。</li>
+                        <li><strong class="text-slate-800">・AREA：</strong> 周辺マップ（OpenStreetMap）に表示するピンと、カテゴリ別（買物・観光・グルメ）のスポットカードを編集できます。</li>
+                        <li><strong class="text-slate-800">・持ち物：</strong> 閲覧者がスマホでタップしてチェックを付けられる持ち物リスト（チェック状態は閲覧者のブラウザに自動保存されます）を編集します。</li>
+                    </ul>
+                </section>
+
+                <section class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-1.5">
+                    <h3 class="font-bold text-sm text-amber-900 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-amber-500"></i>4. 便利なヒント・データ保存について
+                    </h3>
+                    <p class="text-xs text-amber-800">
+                        ・編集内容はブラウザに自動保存されますが、別のパソコンで続きを編集したい場合やバックアップを残したい場合は、ヘッダーの<strong>「データ保存/読込」</strong>からJSONファイルとして保存・復元できます。<br>
+                        ・スマホでの見え方は、プレビュー上部にある<strong>「スマホ幅」</strong>ボタンからいつでも確認できます。
+                    </p>
+                </section>
+            </div>
+
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button id="btn-help-ok" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                    閉じて編集に戻る
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-lg text-xs font-bold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <i id="toast-icon" class="fas fa-check-circle text-emerald-400 text-base"></i>
+        <span id="toast-message">完了しました</span>
+    </div>
+
+<script>
+/**
+ * 初期画面用の空テンプレートデータ（入力欄の背景に例・ガイドを表示）
+ */
+const EMPTY_SHIORI_DATA = {
+    meta: {
+        pageTitle: "",
+        navBrand: "",
+        heroSubtitle: "",
+        heroTitle: "",
+        heroOrg: "",
+        heroDate: "",
+        heroLocation: "",
+        heroImage: "",
+        primaryColor: "#b4a6d4",
+        secondaryColor: "#e5c1a3",
+        bgColor: "#faf9f7",
+        footerTitle: "",
+        footerMessage: "",
+        footerCopyright: "",
+        storageKey: "customShioriChecklist"
+    },
+    plan: {
+        hotelName: "",
+        durationBadge: "",
+        hotelImage: "",
+        postalAndAddress: "",
+        mapQuery: "",
+        accessLines: [
+            { icon: "fas fa-train", text: "" }
+        ],
+        phone: "",
+        websiteUrl: "",
+        meetingDateTime: "",
+        meetingPlace: "",
+        meetingBadge: "",
+        meetingNote: ""
+    },
+    facility: {
+        introText: "",
+        floorPlanTitle: "",
+        floorPlanImage: "",
+        floorPlanDesc: "",
+        roomTitle: "",
+        roomImage: "",
+        roomDesc: "",
+        sharedFacilities: [
+            {
+                title: "",
+                desc: "",
+                image: ""
+            }
+        ],
+        amenityCategories: [
+            {
+                title: "",
+                icon: "fas fa-bath",
+                color: "blue",
+                fullWidth: false,
+                items: []
+            }
+        ],
+        notices: [
+            ""
+        ]
+    },
+    schedule: {
+        days: [
+            {
+                dayLabel: "1日目",
+                dateLabel: "",
+                events: [
+                    {
+                        time: "",
+                        title: "",
+                        desc: "",
+                        style: "normal",
+                        icon: ""
+                    }
+                ]
+            }
+        ],
+        showOtherDaysBox: true,
+        otherDaysTitle: "",
+        otherDaysSubtitle: "",
+        otherDaysDesc: ""
+    },
+    cautions: [
+        {
+            title: "",
+            desc: "",
+            color: "red",
+            icon: "fas fa-clock",
+            fullWidth: false
+        }
+    ],
+    areaGuide: {
+        bannerText: "",
+        hotelLat: 35.681236,
+        hotelLng: 139.767125,
+        hotelPopupDesc: "",
+        spots: [
+            {
+                shortName: "",
+                name: "",
+                category: "shop",
+                icon: "fas fa-store",
+                desc: "",
+                hours: "",
+                address: "",
+                accessShort: "",
+                accessDetail: "",
+                mapQuery: "",
+                lat: 35.683,
+                lng: 139.769,
+                mapPopup: ""
+            }
+        ]
+    },
+    checklist: [
+        ""
+    ]
+};
+
+/**
+ * サンプルデータ（「HAIKARA 夏合宿のしおり 2026」の完成例）
+ */
+const SAMPLE_SHIORI_DATA = {
+    meta: {
+        pageTitle: "HAIKARA 夏合宿のしおり 2026",
+        navBrand: "HAIKARA 2026",
+        heroSubtitle: "TRAVEL NOTE",
+        heroTitle: "夏合宿のしおり",
+        heroOrg: "HAIKARA 2026",
+        heroDate: "2026.09.06 - 09.08",
+        heroLocation: "伊豆・下田方面",
+        heroImage: "image.jpg",
+        primaryColor: "#b4a6d4",
+        secondaryColor: "#e5c1a3",
+        bgColor: "#faf9f7",
+        footerTitle: "HAPPY TRAVELS",
+        footerMessage: "ルールを守って、最高の思い出を作りましょう！",
+        footerCopyright: "© 2026 HAIKARA. All Trip Rights Reserved.",
+        storageKey: "haikaraChecklist2026"
+    },
+    plan: {
+        hotelName: "サンライズガーデン",
+        durationBadge: "2泊3日",
+        hotelImage: "image.jpg",
+        postalAndAddress: "〒413-0503 静岡県賀茂郡河津町見高109-6",
+        mapQuery: "静岡県賀茂郡河津町見高109-6",
+        accessLines: [
+            { icon: "fas fa-train", text: "今井浜海岸駅から徒歩7分" },
+            { icon: "fas fa-umbrella-beach", text: "今井浜海水浴場まで徒歩7分" }
+        ],
+        phone: "0557-37-5155",
+        websiteUrl: "https://www.stagevilla.co.jp/villa/10614",
+        meetingDateTime: "9月6日(日) 9:30",
+        meetingPlace: "東京駅 丸の内南口改札",
+        meetingBadge: "改札外集合",
+        meetingNote: "10:00 特急踊り子5号 出発予定"
+    },
+    facility: {
+        introText: "合宿を最高に盛り上げる、充実の設備をご紹介します。画像はタップで拡大できます。",
+        floorPlanTitle: "館内マップ・間取り",
+        floorPlanImage: "277516_0.jpg",
+        floorPlanDesc: "1Fは食堂やBBQなどの共有スペース、2F・3Fは客室と大広間などのくつろぎエリアになっています。",
+        roomTitle: "ゆったりくつろげる客室",
+        roomImage: "image (1).jpg",
+        roomDesc: "木の温もりを感じる開放的な客室。全客室にバス・トイレ・洗面台が完備されています。",
+        sharedFacilities: [
+            {
+                title: "オーシャンビュー露天風呂",
+                desc: "潮風を感じながらリラックス。（※23時まで）",
+                image: "277514_0.jpg"
+            },
+            {
+                title: "広々とした大浴場",
+                desc: "大人数でも安心の洗い場完備。（※23時まで）",
+                image: "277511_0.jpg"
+            },
+            {
+                title: "プレイルーム",
+                desc: "卓球やビリヤードで白熱バトル！",
+                image: "277494_0.jpg"
+            },
+            {
+                title: "全天候型BBQスペース",
+                desc: "屋根付きで雨の日でも安心。",
+                image: "277518_0.jpg"
+            },
+            {
+                title: "光が差し込む大食堂",
+                desc: "全員で楽しく食事ができます。",
+                image: "277498_0.jpg"
+            },
+            {
+                title: "カラオケ完備のラウンジ",
+                desc: "ふかふかソファで歌って語り合おう！",
+                image: "277517_0.jpg"
+            }
+        ],
+        amenityCategories: [
+            {
+                title: "バス・洗面",
+                icon: "fas fa-bath",
+                color: "blue",
+                items: ["シャンプー", "リンス", "ボディソープ", "ドライヤー ※1"]
+            },
+            {
+                title: "キッチン・食事",
+                icon: "fas fa-utensils",
+                color: "orange",
+                items: ["大食堂", "屋根付きBBQ場", "電子レンジ/冷蔵庫"]
+            },
+            {
+                title: "共有・娯楽設備",
+                icon: "fas fa-gamepad",
+                color: "green",
+                fullWidth: true,
+                items: ["プレイルーム", "卓球台", "ビリヤード", "カラオケラウンジ", "洗濯機", "駐車場"]
+            }
+        ],
+        notices: [
+            "※1 ドライヤーは備え付けがありますが、数が少ない可能性があるため、必要な方はご持参をおすすめします。",
+            "パジャマやタオル類、歯ブラシなどの個人用アメニティは用意がありません。必ずご持参ください。"
+        ]
+    },
+    schedule: {
+        days: [
+            {
+                dayLabel: "1日目",
+                dateLabel: "9月6日 (日)",
+                events: [
+                    {
+                        time: "09:30",
+                        title: "東京駅丸の内南口改札 集合",
+                        desc: "※改札には入らずに待機してください。切符は駅で配布します。",
+                        style: "normal",
+                        icon: ""
+                    },
+                    {
+                        time: "10:00",
+                        title: "特急踊り子5号 出発",
+                        desc: "伊豆急下田方面へ向かいます",
+                        style: "normal",
+                        icon: "fas fa-subway"
+                    },
+                    {
+                        time: "12:28",
+                        title: "河津駅到着・昼食・散策",
+                        desc: "到着後、昼食をとり周辺を自由に散策します。AREA GUIDEを参考にしてください。",
+                        style: "orange-box",
+                        icon: "fas fa-utensils"
+                    },
+                    {
+                        time: "14:40",
+                        title: "河津駅前 集合",
+                        desc: "電車に乗り遅れないよう、時間厳守で集まってください。",
+                        style: "red-title",
+                        icon: ""
+                    },
+                    {
+                        time: "14:56",
+                        title: "河津駅 出発",
+                        desc: "伊豆急行線乗車（14:57 今井浜海岸駅到着予定）",
+                        style: "normal",
+                        icon: ""
+                    },
+                    {
+                        time: "15:07",
+                        title: "サンライズガーデン 到着",
+                        desc: "チェックイン後、荷ほどきをして自由時間です。広々とした露天岩風呂に入ったり、館内で遊んだりできます。",
+                        style: "normal",
+                        icon: ""
+                    },
+                    {
+                        time: "18:00",
+                        title: "BBQ開始！",
+                        desc: "全天候型のBBQ場で夕食です。みんなで協力して準備し、美味しくいただきましょう。",
+                        style: "red-box",
+                        icon: "fas fa-fire"
+                    },
+                    {
+                        time: "20:00",
+                        title: "BBQ終了・片付け",
+                        desc: "",
+                        style: "normal",
+                        icon: ""
+                    },
+                    {
+                        time: "21:00",
+                        title: "大宴会開始",
+                        desc: "ラウンジに集まってカラオケや宴会で盛り上がりましょう！",
+                        style: "normal",
+                        icon: "fas fa-glass-cheers text-yellow-500"
+                    }
+                ]
+            }
+        ],
+        showOtherDaysBox: true,
+        otherDaysTitle: "2日目・3日目の予定",
+        otherDaysSubtitle: "2日目・3日目の予定について",
+        otherDaysDesc: "9月7日(月)・8日(火)の詳細は後日別途ご案内します。当日は行動計画および役員の指示に従って行動してください。"
+    },
+    cautions: [
+        {
+            title: "時間を厳守",
+            desc: "集合時間や出発時間を守って行動しましょう。遅れそうな場合はすぐに役員へ連絡をしてください。",
+            color: "red",
+            icon: "fas fa-clock",
+            fullWidth: false
+        },
+        {
+            title: "貴重品の管理",
+            desc: "財布やスマホなどの貴重品は肌身離さず、自己責任でしっかりと管理しましょう。",
+            color: "yellow",
+            icon: "fas fa-wallet",
+            fullWidth: false
+        },
+        {
+            title: "マナーを守る",
+            desc: "深夜の大声・騒音は禁止です。周りの宿泊客や近隣の方の迷惑にならないよう配慮ある行動をしましょう。",
+            color: "blue",
+            icon: "fas fa-volume-mute",
+            fullWidth: false
+        },
+        {
+            title: "体調管理・防寒対策",
+            desc: "防寒対策を徹底し、体調が悪くなった場合は無理せずすぐに役員や仲間に伝えてください。",
+            color: "green",
+            icon: "fas fa-heartbeat",
+            fullWidth: false
+        },
+        {
+            title: "レンタカーに関する注意",
+            desc: "自由時間にレンタカーを借りる班は、必ず事前に役員へ連絡をしてください。安全運転を第一に心がけましょう。",
+            color: "purple",
+            icon: "fas fa-car",
+            fullWidth: true
+        }
+    ],
+    areaGuide: {
+        bannerText: "ここに掲載しているのはほんの一部！魅力的なスポットが他にもたくさんあるので、ぜひ調べてみてください✨",
+        hotelLat: 34.75405,
+        hotelLng: 139.00159,
+        hotelPopupDesc: "今回の宿泊先です。",
+        spots: [
+            {
+                shortName: "セブンイレブン",
+                name: "セブン-イレブン 伊豆河津駅前店",
+                category: "shop",
+                icon: "fas fa-store",
+                desc: "河津駅前にある便利なコンビニ。ちょっとした買い出しに便利です。",
+                hours: "24時間営業",
+                address: "静岡県賀茂郡河津町浜155-2",
+                accessShort: "車約3分/徒歩約22分",
+                accessDetail: "車 約3分 / 徒歩 約22分",
+                mapQuery: "セブンイレブン伊豆河津駅前店",
+                lat: 34.7485,
+                lng: 138.9918,
+                mapPopup: "便利な駅前コンビニ"
+            },
+            {
+                shortName: "スーパーあおき",
+                name: "スーパーあおき 河津店",
+                category: "shop",
+                icon: "fas fa-shopping-basket",
+                desc: "BBQの食材やお酒の買い出しのメインに。品揃え豊富で新鮮な魚介も。",
+                hours: "9:30～19:30",
+                address: "静岡県賀茂郡河津町浜142-1",
+                accessShort: "車約5分",
+                accessDetail: "車 約5分 / 河津駅近く",
+                mapQuery: "スーパーあおき河津店",
+                lat: 34.7490,
+                lng: 138.9915,
+                mapPopup: "BBQの買い出しに便利"
+            },
+            {
+                shortName: "マックスバリュ",
+                name: "マックスバリュ 河津店",
+                category: "shop",
+                icon: "fas fa-shopping-basket",
+                desc: "あおきの近くにある大型スーパー。必要なものはだいたい揃います。",
+                hours: "7:00～23:30",
+                address: "静岡県賀茂郡河津町笹原356-1",
+                accessShort: "車約5分",
+                accessDetail: "車 約5分 / 河津駅近く",
+                mapQuery: "マックスバリュ河津店",
+                lat: 34.7495,
+                lng: 138.9920,
+                mapPopup: "大型スーパー"
+            },
+            {
+                shortName: "ココカラファイン",
+                name: "ココカラファイン 河津店",
+                category: "shop",
+                icon: "fas fa-pills",
+                desc: "日用品、薬、化粧品などの急な買い物に。虫除けや日焼け止めもここで。",
+                hours: "9:00～21:00",
+                address: "静岡県賀茂郡河津町浜164-1",
+                accessShort: "車約5分",
+                accessDetail: "車 約5分 / 河津駅近く",
+                mapQuery: "ココカラファイン河津店",
+                lat: 34.7485,
+                lng: 138.9930,
+                mapPopup: "日用品・薬の買い出しに"
+            },
+            {
+                shortName: "今井浜海水浴場",
+                name: "今井浜海水浴場",
+                category: "sightseeing",
+                icon: "fas fa-umbrella-beach",
+                desc: "伊豆有数の水質を誇る美しいビーチ。朝の散歩や水遊び、写真撮影に最適。",
+                hours: "",
+                address: "静岡県賀茂郡河津町見高",
+                accessShort: "徒歩約7分",
+                accessDetail: "徒歩 約7分",
+                mapQuery: "今井浜海水浴場",
+                lat: 34.7430,
+                lng: 138.9955,
+                mapPopup: "徒歩圏内の美しいビーチ"
+            },
+            {
+                shortName: "iZoo（イズー）",
+                name: "体感型動物園 iZoo（イズー）",
+                category: "sightseeing",
+                icon: "fas fa-paw",
+                desc: "日本最大の爬虫類・両生類の動物園。ゾウガメに乗ったり、ヘビと触れ合えたり体験がいっぱい。",
+                hours: "",
+                address: "静岡県賀茂郡河津町浜406-2",
+                accessShort: "車約10分",
+                accessDetail: "車 約10分",
+                mapQuery: "iZoo",
+                lat: 34.7214,
+                lng: 138.9722,
+                mapPopup: "日本最大の爬虫類・両生類動物園"
+            },
+            {
+                shortName: "河津七滝",
+                name: "河津七滝（かわづななだる）",
+                category: "sightseeing",
+                icon: "fas fa-water",
+                desc: "7つの滝を巡る約1.5kmのハイキングコース。マイナスイオンたっぷりでリフレッシュできます。",
+                hours: "",
+                address: "静岡県賀茂郡河津町梨本",
+                accessShort: "車約20分",
+                accessDetail: "車 約20分 / 河津駅からバス",
+                mapQuery: "河津七滝",
+                lat: 34.7941,
+                lng: 138.9304,
+                mapPopup: "マイナスイオンたっぷりの滝巡り"
+            },
+            {
+                shortName: "下田海中水族館",
+                name: "下田海中水族館",
+                category: "sightseeing",
+                icon: "fas fa-fish",
+                desc: "自然の入り江を利用した水族館。イルカが頭上をジャンプするショーが間近で見られます。",
+                hours: "",
+                address: "静岡県下田市3-22-31",
+                accessShort: "車約25分",
+                accessDetail: "車 約25分 / 伊豆急下田駅方面",
+                mapQuery: "下田海中水族館",
+                lat: 34.6644,
+                lng: 138.9461,
+                mapPopup: "自然の入り江を利用した水族館"
+            },
+            {
+                shortName: "わさび園かどや",
+                name: "わさび園かどや (孤独のグルメ登場店)",
+                category: "gourmet",
+                icon: "fas fa-leaf",
+                desc: "自分で生わさびをすって食べる「わさび丼」が大人気。河津七滝のすぐ近く。行列必至！",
+                hours: "",
+                address: "静岡県賀茂郡河津町梨本371-1",
+                accessShort: "車約20分",
+                accessDetail: "車 約20分",
+                mapQuery: "わさび園かどや",
+                lat: 34.7935,
+                lng: 138.9328,
+                mapPopup: "孤独のグルメにも登場したわさび丼"
+            },
+            {
+                shortName: "どんぶりや",
+                name: "伊豆海鮮 どんぶりや",
+                category: "gourmet",
+                icon: "fas fa-fish",
+                desc: "河津駅前にある海鮮丼のお店。新鮮な地魚をランチで食べるのにおすすめ。ボリューム満点。",
+                hours: "",
+                address: "静岡県賀茂郡河津町浜142-2",
+                accessShort: "車約5分",
+                accessDetail: "車 約5分 / 河津駅前",
+                mapQuery: "伊豆海鮮どんぶりや 河津",
+                lat: 34.7475,
+                lng: 138.9940,
+                mapPopup: "新鮮な海鮮丼ランチ"
+            },
+            {
+                shortName: "踊り子温泉会館",
+                name: "踊り子温泉会館 (日帰り温泉)",
+                category: "gourmet",
+                icon: "fas fa-hot-tub",
+                desc: "河津川沿いにある町営の温泉施設。広い露天風呂やサウナでリラックス。タオルは有料レンタルあり。",
+                hours: "",
+                address: "静岡県賀茂郡河津町峰457-1",
+                accessShort: "車約10分",
+                accessDetail: "車 約10分",
+                mapQuery: "踊り子温泉会館",
+                lat: 34.7571,
+                lng: 138.9839,
+                mapPopup: "広い露天風呂がある日帰り温泉"
+            }
+        ]
+    },
+    checklist: [
+        "財布", "携帯電話", "充電器", "現金", "交通ICカード",
+        "学生証", "身分証明書", "散策用バッグ", "折り畳み傘", "防寒具",
+        "バスタオル・タオル", "履き馴れた靴", "予備の靴下", "パジャマ", "ハンカチ",
+        "ティッシュ", "歯磨きセット", "免許証",
+        "みんなで遊べるもの", "ドライヤー (推奨)"
+    ]
+};
+
+// データ構造の互換マイグレーション（旧形式のscheduleにも対応）
+function normalizeShioriData(raw) {
+    const data = JSON.parse(JSON.stringify(raw));
+    if (data.schedule && !Array.isArray(data.schedule.days)) {
+        data.schedule = {
+            days: [
+                {
+                    dayLabel: data.schedule.dayLabel || "1日目",
+                    dateLabel: data.schedule.dateLabel || "",
+                    events: Array.isArray(data.schedule.events) ? data.schedule.events : []
+                }
+            ],
+            showOtherDaysBox: true,
+            otherDaysTitle: data.schedule.otherDaysTitle || "2日目・3日目の予定",
+            otherDaysSubtitle: data.schedule.otherDaysSubtitle || "2日目・3日目の予定について",
+            otherDaysDesc: data.schedule.otherDaysDesc || ""
+        };
+    }
+    return data;
+}
+
+// アプリケーション状態（初期画面は空＋入力ガイド表示）
+let appData = normalizeShioriData(EMPTY_SHIORI_DATA);
+let currentTab = 'basic';
+let previewUpdateTimer = null;
+
+// ローカルストレージから前回の編集状態を復元
+try {
+    const saved = localStorage.getItem('shioriGeneratorDraft_v2');
+    if (saved) {
+        appData = normalizeShioriData(JSON.parse(saved));
+    }
+} catch (e) {
+    console.warn('Draft load skipped:', e);
+}
+
+/**
+ * ユーティリティ関数群
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+    toastMsg.textContent = msg;
+    toastIcon.className = isError
+        ? 'fas fa-exclamation-circle text-red-400 text-base'
+        : 'fas fa-check-circle text-emerald-400 text-base';
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+    }, 2800);
+}
+
+function showCustomConfirm(title, message, onConfirm) {
+    const modal = document.getElementById('confirm-modal');
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    const cleanup = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+
+    const okBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+    newOk.addEventListener('click', () => {
+        cleanup();
+        onConfirm();
+    });
+    newCancel.addEventListener('click', cleanup);
+}
+
+function saveDraftAndRefreshPreview(immediate = false) {
+    try {
+        localStorage.setItem('shioriGeneratorDraft_v2', JSON.stringify(appData));
+    } catch (e) {
+        // 画像サイズが大きすぎる場合など
+    }
+    if (previewUpdateTimer) clearTimeout(previewUpdateTimer);
+    if (immediate) {
+        updatePreviewIframe();
+    } else {
+        previewUpdateTimer = setTimeout(updatePreviewIframe, 350);
+    }
+}
+
+/**
+ * 画像選択・ドラッグ＆ドロップ・削除用の共通UIパーツ生成
+ */
+function renderImageEditor(label, currentValue, pathKey) {
+    const isDataUrl = currentValue && currentValue.startsWith('data:image');
+    const displayValue = isDataUrl ? '(アップロード済み画像データ)' : (currentValue || '');
+    const previewSrc = currentValue && isDataUrl ? currentValue : '';
+
+    return `
+        <div class="bg-slate-50 p-3 rounded-xl border-2 border-dashed border-slate-300 transition-colors space-y-2"
+             ondragover="handleImageDragOver(event)"
+             ondragleave="handleImageDragLeave(event)"
+             ondrop="handleImageDrop(event, '${pathKey}')">
+            <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-700">${escapeHtml(label)}</label>
+                ${currentValue ? `<button type="button" class="text-[11px] text-red-500 hover:text-red-700 font-bold" onclick="clearImageField('${pathKey}')"><i class="fas fa-trash-alt mr-1"></i>画像をクリア</button>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition flex-shrink-0 shadow-sm">
+                    <i class="fas fa-image mr-1"></i>写真を選択
+                    <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event, '${pathKey}')">
+                </label>
+                <input type="text"
+                    value="${escapeHtml(displayValue)}"
+                    ${isDataUrl ? 'readonly' : ''}
+                    placeholder="ドラッグ＆ドロップ または ファイル名/URL"
+                    oninput="updateDataByPath('${pathKey}', this.value)"
+                    class="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-indigo-500 ${isDataUrl ? 'text-indigo-600 font-medium bg-indigo-50/40' : ''}">
+            </div>
+            <p class="text-[10px] text-slate-400 flex items-center gap-1">
+                <i class="fas fa-cloud-upload-alt text-indigo-400"></i>
+                <span>パソコンから写真ファイルをここに直接ドラッグ＆ドロップできます</span>
+            </p>
+            ${previewSrc ? `
+                <div class="mt-2 relative h-24 rounded-lg overflow-hidden border border-slate-200 bg-white">
+                    <img src="${previewSrc}" alt="プレビュー" class="w-full h-full object-cover">
+                </div>
+            ` : (currentValue ? `<p class="text-[10px] text-slate-500"><i class="fas fa-link mr-1"></i>参照パス: <code>${escapeHtml(currentValue)}</code></p>` : '')}
+        </div>
+    `;
+}
+
+/**
+ * ドット区切りパスによるデータ更新ヘルパー
+ */
+function updateDataByPath(path, value) {
+    const keys = path.split('.');
+    let obj = appData;
+    for (let i = 0; i < keys.length - 1; i++) {
+        obj = obj[keys[i]];
+    }
+    obj[keys[keys.length - 1]] = value;
+    saveDraftAndRefreshPreview();
+}
+
+function clearImageField(path) {
+    updateDataByPath(path, '');
+    renderEditorTab(currentTab);
+    showToast('画像をクリアしました');
+}
+
+function handleImageDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const dropZone = event.currentTarget;
+    dropZone.classList.remove('border-slate-300', 'bg-slate-50');
+    dropZone.classList.add('border-indigo-500', 'bg-indigo-50/80');
+}
+
+function handleImageDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const dropZone = event.currentTarget;
+    dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/80');
+    dropZone.classList.add('border-slate-300', 'bg-slate-50');
+}
+
+function handleImageDrop(event, path) {
+    event.preventDefault();
+    event.stopPropagation();
+    const dropZone = event.currentTarget;
+    dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/80');
+    dropZone.classList.add('border-slate-300', 'bg-slate-50');
+
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+        showToast('画像ファイル（JPG・PNGなど）をドロップしてください', true);
+        return;
+    }
+    processImageFile(file, path);
+}
+
+function handleImageUpload(event, path) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    processImageFile(file, path);
+}
+
+function processImageFile(file, path) {
+    // 画像を適度なサイズにリサイズ＆圧縮して軽量で高画質なDataURLに変換
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const maxDim = 1400;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                    h = Math.round((h * maxDim) / w);
+                    w = maxDim;
+                } else {
+                    w = Math.round((w * maxDim) / h);
+                    h = maxDim;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            updateDataByPath(path, dataUrl);
+            renderEditorTab(currentTab);
+            showToast('写真を読み込みました！');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * 左側エディタフォームの描画
+ */
+function renderEditorTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tab) {
+            btn.classList.add('active');
+            btn.classList.remove('text-slate-600', 'hover:bg-slate-200/70');
+        } else {
+            btn.classList.remove('active');
+            btn.classList.add('text-slate-600', 'hover:bg-slate-200/70');
+        }
+    });
+
+    const container = document.getElementById('editor-form-container');
+
+    if (tab === 'basic') {
+        const m = appData.meta;
+        container.innerHTML = `
+            <div class="space-y-5">
+                <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 flex items-center justify-between gap-2">
+                    <p class="text-[11px] text-indigo-900">
+                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>各欄の薄い文字を参考に入力してください。完成例を見たい場合は右のボタンから読み込めます。
+                    </p>
+                    <button type="button" onclick="loadSampleDataWithConfirm()" class="px-2.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white text-[11px] font-bold whitespace-nowrap transition shadow-sm">
+                        例を読み込む
+                    </button>
+                </div>
+
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-heading text-indigo-600"></i>表紙・タイトル設定
+                    </h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">ブラウザのタブタイトル</label>
+                            <input type="text" value="${escapeHtml(m.pageTitle)}" placeholder="例：〇〇サークル 夏合宿のしおり 2026" oninput="updateDataByPath('meta.pageTitle', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">左上ロゴ文字</label>
+                                <input type="text" value="${escapeHtml(m.navBrand)}" placeholder="例：HAIKARA 2026" oninput="updateDataByPath('meta.navBrand', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">表紙サブ英語</label>
+                                <input type="text" value="${escapeHtml(m.heroSubtitle)}" placeholder="例：TRAVEL NOTE" oninput="updateDataByPath('meta.heroSubtitle', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">表紙メインタイトル</label>
+                            <input type="text" value="${escapeHtml(m.heroTitle)}" placeholder="例：夏合宿のしおり" oninput="updateDataByPath('meta.heroTitle', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">団体名・サブタイトル</label>
+                            <input type="text" value="${escapeHtml(m.heroOrg)}" placeholder="例：HAIKARA 2026" oninput="updateDataByPath('meta.heroOrg', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">日程</label>
+                                <input type="text" value="${escapeHtml(m.heroDate)}" placeholder="例：2026.09.06 - 09.08" oninput="updateDataByPath('meta.heroDate', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">行き先エリア</label>
+                                <input type="text" value="${escapeHtml(m.heroLocation)}" placeholder="例：伊豆・下田方面" oninput="updateDataByPath('meta.heroLocation', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                        ${renderImageEditor('表紙の背景写真', m.heroImage, 'meta.heroImage')}
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-palette text-indigo-600"></i>テーマカラー設定
+                    </h2>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">メインカラー</label>
+                            <input type="color" value="${escapeHtml(m.primaryColor)}" oninput="updateDataByPath('meta.primaryColor', this.value)" class="w-10 h-10 rounded-lg cursor-pointer border-0 mx-auto block">
+                            <span class="text-[10px] text-slate-500 mt-1 block font-mono">${escapeHtml(m.primaryColor)}</span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">アクセント</label>
+                            <input type="color" value="${escapeHtml(m.secondaryColor)}" oninput="updateDataByPath('meta.secondaryColor', this.value)" class="w-10 h-10 rounded-lg cursor-pointer border-0 mx-auto block">
+                            <span class="text-[10px] text-slate-500 mt-1 block font-mono">${escapeHtml(m.secondaryColor)}</span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">背景色</label>
+                            <input type="color" value="${escapeHtml(m.bgColor)}" oninput="updateDataByPath('meta.bgColor', this.value)" class="w-10 h-10 rounded-lg cursor-pointer border-0 mx-auto block">
+                            <span class="text-[10px] text-slate-500 mt-1 block font-mono">${escapeHtml(m.bgColor)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-shoe-prints text-indigo-600"></i>フッター設定
+                    </h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">フッター見出し</label>
+                            <input type="text" value="${escapeHtml(m.footerTitle)}" placeholder="例：HAPPY TRAVELS" oninput="updateDataByPath('meta.footerTitle', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">メッセージ</label>
+                            <input type="text" value="${escapeHtml(m.footerMessage)}" placeholder="例：ルールを守って、最高の思い出を作りましょう！" oninput="updateDataByPath('meta.footerMessage', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">コピーライト表記</label>
+                            <input type="text" value="${escapeHtml(m.footerCopyright)}" placeholder="例：© 2026 HAIKARA. All Trip Rights Reserved." oninput="updateDataByPath('meta.footerCopyright', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (tab === 'plan') {
+        const p = appData.plan;
+        container.innerHTML = `
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-hotel text-indigo-600"></i>宿泊先情報
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">宿泊先名</label>
+                                <input type="text" value="${escapeHtml(p.hotelName)}" placeholder="例：サンライズガーデン" oninput="updateDataByPath('plan.hotelName', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">泊数バッジ</label>
+                                <input type="text" value="${escapeHtml(p.durationBadge)}" placeholder="例：2泊3日" oninput="updateDataByPath('plan.durationBadge', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                        ${renderImageEditor('宿泊先の外観写真', p.hotelImage, 'plan.hotelImage')}
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">郵便番号・住所</label>
+                            <input type="text" value="${escapeHtml(p.postalAndAddress)}" placeholder="例：〒413-0503 静岡県賀茂郡河津町見高109-6" oninput="updateDataByPath('plan.postalAndAddress', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Googleマップ検索用住所・施設名</label>
+                            <input type="text" value="${escapeHtml(p.mapQuery)}" placeholder="例：静岡県賀茂郡河津町見高109-6" oninput="updateDataByPath('plan.mapQuery', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">電話番号</label>
+                                <input type="text" value="${escapeHtml(p.phone)}" placeholder="例：0557-37-5155" oninput="updateDataByPath('plan.phone', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">公式サイトURL</label>
+                                <input type="text" value="${escapeHtml(p.websiteUrl)}" placeholder="例：https://example.com" oninput="updateDataByPath('plan.websiteUrl', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-xs font-bold text-slate-600">アクセス情報リスト</label>
+                                <button type="button" onclick="addAccessLine()" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold"><i class="fas fa-plus-circle mr-1"></i>行を追加</button>
+                            </div>
+                            <div class="space-y-2">
+                                ${p.accessLines.map((line, idx) => `
+                                    <div class="flex items-center gap-2">
+                                        <select onchange="updateDataByPath('plan.accessLines.${idx}.icon', this.value)" class="text-xs px-2 py-2 rounded-xl border border-slate-300 bg-white">
+                                            <option value="fas fa-train" ${line.icon === 'fas fa-train' ? 'selected' : ''}>電車</option>
+                                            <option value="fas fa-umbrella-beach" ${line.icon === 'fas fa-umbrella-beach' ? 'selected' : ''}>海・ビーチ</option>
+                                            <option value="fas fa-car" ${line.icon === 'fas fa-car' ? 'selected' : ''}>車</option>
+                                            <option value="fas fa-bus" ${line.icon === 'fas fa-bus' ? 'selected' : ''}>バス</option>
+                                            <option value="fas fa-walking" ${line.icon === 'fas fa-walking' ? 'selected' : ''}>徒歩</option>
+                                        </select>
+                                        <input type="text" value="${escapeHtml(line.text)}" placeholder="例：今井浜海岸駅から徒歩7分" oninput="updateDataByPath('plan.accessLines.${idx}.text', this.value)" class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-300">
+                                        <button type="button" onclick="removeAccessLine(${idx})" class="p-2 text-slate-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-flag text-orange-500"></i>初日の集合場所
+                    </h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">集合日時</label>
+                            <input type="text" value="${escapeHtml(p.meetingDateTime)}" placeholder="例：9月6日(日) 9:30" oninput="updateDataByPath('plan.meetingDateTime', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-600 mb-1">集合場所</label>
+                                <input type="text" value="${escapeHtml(p.meetingPlace)}" placeholder="例：東京駅 丸の内南口改札" oninput="updateDataByPath('plan.meetingPlace', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">赤枠バッジ</label>
+                                <input type="text" value="${escapeHtml(p.meetingBadge)}" placeholder="例：改札外集合" oninput="updateDataByPath('plan.meetingBadge', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">出発予定・補足メモ</label>
+                            <input type="text" value="${escapeHtml(p.meetingNote)}" placeholder="例：10:00 特急踊り子5号 出発予定" oninput="updateDataByPath('plan.meetingNote', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (tab === 'facility') {
+        const f = appData.facility;
+        container.innerHTML = `
+            <div class="space-y-6">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">間取り・客室セクション</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">導入リード文</label>
+                            <input type="text" value="${escapeHtml(f.introText)}" placeholder="例：合宿を最高に盛り上げる、充実の設備をご紹介します。画像はタップで拡大できます。" oninput="updateDataByPath('facility.introText', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2.5">
+                            <p class="text-xs font-bold text-indigo-700">左カード：間取り図</p>
+                            <input type="text" value="${escapeHtml(f.floorPlanTitle)}" placeholder="例：館内マップ・間取り" oninput="updateDataByPath('facility.floorPlanTitle', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                            ${renderImageEditor('間取り図画像', f.floorPlanImage, 'facility.floorPlanImage')}
+                            <textarea rows="2" placeholder="例：1Fは食堂やBBQなどの共有スペース、2F・3Fは客室と大広間になっています。" oninput="updateDataByPath('facility.floorPlanDesc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">${escapeHtml(f.floorPlanDesc)}</textarea>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2.5">
+                            <p class="text-xs font-bold text-indigo-700">右カード：客室紹介</p>
+                            <input type="text" value="${escapeHtml(f.roomTitle)}" placeholder="例：ゆったりくつろげる客室" oninput="updateDataByPath('facility.roomTitle', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                            ${renderImageEditor('客室の写真', f.roomImage, 'facility.roomImage')}
+                            <textarea rows="2" placeholder="例：木の温もりを感じる開放的な客室。全客室にバス・トイレ・洗面台が完備されています。" oninput="updateDataByPath('facility.roomDesc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">${escapeHtml(f.roomDesc)}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                        <h2 class="text-base font-bold text-slate-800">共有設備ギャラリー (${f.sharedFacilities.length}件)</h2>
+                        <button type="button" onclick="addSharedFacility()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                            <i class="fas fa-plus mr-1"></i>設備追加
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${f.sharedFacilities.map((item, idx) => `
+                            <div class="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-500">#${idx + 1}</span>
+                                    <button type="button" onclick="removeSharedFacility(${idx})" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash mr-1"></i>削除</button>
+                                </div>
+                                <input type="text" value="${escapeHtml(item.title)}" placeholder="例：オーシャンビュー露天風呂 / プレイルーム" oninput="updateDataByPath('facility.sharedFacilities.${idx}.title', this.value)" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300">
+                                <input type="text" value="${escapeHtml(item.desc)}" placeholder="例：潮風を感じながらリラックス。（※23時まで）" oninput="updateDataByPath('facility.sharedFacilities.${idx}.desc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
+                                ${renderImageEditor('写真', item.image, `facility.sharedFacilities.${idx}.image`)}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                        <h2 class="text-base font-bold text-slate-800">アメニティ・設備詳細</h2>
+                        <button type="button" onclick="addAmenityCategory()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                            <i class="fas fa-plus mr-1"></i>カテゴリ追加
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${f.amenityCategories.map((cat, idx) => `
+                            <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <input type="text" value="${escapeHtml(cat.title)}" placeholder="例：バス・洗面 / キッチン・食事" oninput="updateDataByPath('facility.amenityCategories.${idx}.title', this.value)" class="flex-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                    <select onchange="updateDataByPath('facility.amenityCategories.${idx}.color', this.value)" class="text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                        <option value="blue" ${cat.color === 'blue' ? 'selected' : ''}>青系</option>
+                                        <option value="orange" ${cat.color === 'orange' ? 'selected' : ''}>オレンジ系</option>
+                                        <option value="green" ${cat.color === 'green' ? 'selected' : ''}>緑系</option>
+                                        <option value="purple" ${cat.color === 'purple' ? 'selected' : ''}>紫系</option>
+                                    </select>
+                                    <button type="button" onclick="removeAmenityCategory(${idx})" class="text-red-500 hover:text-red-700 px-1.5"><i class="fas fa-trash"></i></button>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-500 mb-1">アイテム（カンマ「、」または「,」区切りで入力）</label>
+                                    <input type="text" value="${escapeHtml(cat.items.join(', '))}" placeholder="例：シャンプー, リンス, ボディソープ, ドライヤー" oninput="updateAmenityItems(${idx}, this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                        <h2 class="text-base font-bold text-slate-800">アメニティ注意事項（赤枠）</h2>
+                        <button type="button" onclick="addFacilityNotice()" class="text-xs text-indigo-600 font-bold"><i class="fas fa-plus-circle mr-1"></i>追加</button>
+                    </div>
+                    <div class="space-y-2">
+                        ${f.notices.map((n, idx) => `
+                            <div class="flex items-start gap-2">
+                                <textarea rows="2" placeholder="例：パジャマやタオル類、歯ブラシなどの個人用アメニティは用意がありません。必ずご持参ください。" oninput="updateDataByPath('facility.notices.${idx}', this.value)" class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-300">${escapeHtml(n)}</textarea>
+                                <button type="button" onclick="removeFacilityNotice(${idx})" class="p-2 text-slate-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (tab === 'schedule') {
+        const s = appData.schedule;
+        container.innerHTML = `
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">日程タイムライン (${s.days.length}日分)</h2>
+                        <p class="text-[11px] text-slate-500">1日目だけでなく、2日目・3日目も自由に追加・編集できます</p>
+                    </div>
+                    <button type="button" onclick="addScheduleDay()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition shadow-sm whitespace-nowrap">
+                        <i class="fas fa-calendar-plus mr-1"></i>日程を追加
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    ${s.days.map((day, dIdx) => `
+                        <div class="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/30 space-y-4">
+                            <div class="flex items-center justify-between border-b border-indigo-100 pb-2">
+                                <span class="text-xs font-bold text-indigo-700 flex items-center gap-1.5">
+                                    <i class="fas fa-calendar-day"></i>日程ブロック #${dIdx + 1}
+                                </span>
+                                ${s.days.length > 1 ? `
+                                    <button type="button" onclick="removeScheduleDay(${dIdx})" class="text-xs text-red-500 hover:text-red-700 font-bold">
+                                        <i class="fas fa-trash mr-1"></i>この日程を削除
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">日目ラベル</label>
+                                    <input type="text" value="${escapeHtml(day.dayLabel)}" placeholder="例：${dIdx + 1}日目" oninput="updateDataByPath('schedule.days.${dIdx}.dayLabel', this.value)" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">日付バッジ</label>
+                                    <input type="text" value="${escapeHtml(day.dateLabel)}" placeholder="例：9月${6 + dIdx}日 (${['日','月','火','水','木','金','土'][dIdx % 7]})" oninput="updateDataByPath('schedule.days.${dIdx}.dateLabel', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-700">タイムライン予定 (${day.events.length}件)</span>
+                                    <button type="button" onclick="addScheduleEvent(${dIdx})" class="px-2.5 py-1 rounded-lg bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white text-xs font-bold transition shadow-sm">
+                                        <i class="fas fa-plus mr-1"></i>予定を追加
+                                    </button>
+                                </div>
+
+                                ${day.events.map((ev, eIdx) => `
+                                    <div class="p-3 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">#${eIdx + 1}</span>
+                                                <button type="button" onclick="moveScheduleEvent(${dIdx}, ${eIdx}, -1)" ${eIdx === 0 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30" title="上へ"><i class="fas fa-arrow-up text-xs"></i></button>
+                                                <button type="button" onclick="moveScheduleEvent(${dIdx}, ${eIdx}, 1)" ${eIdx === day.events.length - 1 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30" title="下へ"><i class="fas fa-arrow-down text-xs"></i></button>
+                                            </div>
+                                            <button type="button" onclick="removeScheduleEvent(${dIdx}, ${eIdx})" class="text-[11px] text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash mr-1"></i>削除</button>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-slate-500">時刻</label>
+                                                <input type="text" value="${escapeHtml(ev.time)}" placeholder="例：09:30" oninput="updateDataByPath('schedule.days.${dIdx}.events.${eIdx}.time', this.value)" class="w-full text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                            </div>
+                                            <div class="col-span-2">
+                                                <label class="block text-[10px] font-bold text-slate-500">表示スタイル</label>
+                                                <select onchange="updateDataByPath('schedule.days.${dIdx}.events.${eIdx}.style', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                                    <option value="normal" ${ev.style === 'normal' ? 'selected' : ''}>通常</option>
+                                                    <option value="orange-box" ${ev.style === 'orange-box' ? 'selected' : ''}>オレンジ強調カード（昼食など）</option>
+                                                    <option value="red-box" ${ev.style === 'red-box' ? 'selected' : ''}>レッド強調カード（BBQなど）</option>
+                                                    <option value="red-title" ${ev.style === 'red-title' ? 'selected' : ''}>赤文字タイトル（時間厳守など）</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <input type="text" value="${escapeHtml(ev.title)}" placeholder="例：東京駅丸の内南口改札 集合" oninput="updateDataByPath('schedule.days.${dIdx}.events.${eIdx}.title', this.value)" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300">
+                                        </div>
+                                        <div>
+                                            <textarea rows="2" placeholder="例：※改札には入らずに待機してください。切符は駅で配布します。（空欄可）" oninput="updateDataByPath('schedule.days.${dIdx}.events.${eIdx}.desc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">${escapeHtml(ev.desc)}</textarea>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- 折りたたみ案内ボックス設定 -->
+                <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-800">折りたたみ案内ボックス（「タップして確認」形式）</h3>
+                            <p class="text-[10px] text-slate-500">2日目・3日目をタイムラインではなく開閉式案内にする場合に使用します</p>
+                        </div>
+                        <label class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 cursor-pointer bg-white px-2.5 py-1.5 rounded-xl border border-slate-200">
+                            <input type="checkbox" ${s.showOtherDaysBox ? 'checked' : ''} onchange="toggleOtherDaysBox(this.checked)" class="rounded text-indigo-600">
+                            <span>表示する</span>
+                        </label>
+                    </div>
+                    ${s.showOtherDaysBox ? `
+                        <div class="space-y-2 pt-1">
+                            <input type="text" value="${escapeHtml(s.otherDaysTitle)}" placeholder="例：2日目・3日目の予定" oninput="updateDataByPath('schedule.otherDaysTitle', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                            <input type="text" value="${escapeHtml(s.otherDaysSubtitle)}" placeholder="例：2日目・3日目の予定について" oninput="updateDataByPath('schedule.otherDaysSubtitle', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                            <textarea rows="2" placeholder="例：9月7日(月)・8日(火)の詳細は後日別途ご案内します。当日は行動計画および役員の指示に従って行動してください。" oninput="updateDataByPath('schedule.otherDaysDesc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white">${escapeHtml(s.otherDaysDesc)}</textarea>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    } else if (tab === 'caution') {
+        const list = appData.cautions;
+        container.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <h2 class="text-base font-bold text-slate-800">注意事項カード (${list.length}件)</h2>
+                    <button type="button" onclick="addCautionItem()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                        <i class="fas fa-plus mr-1"></i>カード追加
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    ${list.map((c, idx) => `
+                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-500">注意事項 #${idx + 1}</span>
+                                <button type="button" onclick="removeCautionItem(${idx})" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash mr-1"></i>削除</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">枠線カラー</label>
+                                    <select onchange="updateDataByPath('cautions.${idx}.color', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                        <option value="red" ${c.color === 'red' ? 'selected' : ''}>レッド（赤）</option>
+                                        <option value="yellow" ${c.color === 'yellow' ? 'selected' : ''}>イエロー（黄）</option>
+                                        <option value="blue" ${c.color === 'blue' ? 'selected' : ''}>ブルー（青）</option>
+                                        <option value="green" ${c.color === 'green' ? 'selected' : ''}>グリーン（緑）</option>
+                                        <option value="purple" ${c.color === 'purple' ? 'selected' : ''}>パープル（紫）</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">アイコン</label>
+                                    <select onchange="updateDataByPath('cautions.${idx}.icon', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                        <option value="fas fa-clock" ${c.icon === 'fas fa-clock' ? 'selected' : ''}>時計</option>
+                                        <option value="fas fa-wallet" ${c.icon === 'fas fa-wallet' ? 'selected' : ''}>財布・貴重品</option>
+                                        <option value="fas fa-volume-mute" ${c.icon === 'fas fa-volume-mute' ? 'selected' : ''}>消音・マナー</option>
+                                        <option value="fas fa-heartbeat" ${c.icon === 'fas fa-heartbeat' ? 'selected' : ''}>健康・ハート</option>
+                                        <option value="fas fa-car" ${c.icon === 'fas fa-car' ? 'selected' : ''}>車・レンタカー</option>
+                                        <option value="fas fa-exclamation-circle" ${c.icon === 'fas fa-exclamation-circle' ? 'selected' : ''}>エクスクラメーション</option>
+                                        <option value="fas fa-glass-cheers" ${c.icon === 'fas fa-glass-cheers' ? 'selected' : ''}>お酒・宴会</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <input type="text" value="${escapeHtml(c.title)}" placeholder="例：時間を厳守 / 貴重品の管理" oninput="updateDataByPath('cautions.${idx}.title', this.value)" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300">
+                            <textarea rows="2" placeholder="例：集合時間や出発時間を守って行動しましょう。遅れそうな場合はすぐに役員へ連絡をしてください。" oninput="updateDataByPath('cautions.${idx}.desc', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">${escapeHtml(c.desc)}</textarea>
+                            <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                                <input type="checkbox" ${c.fullWidth ? 'checked' : ''} onchange="updateDataByPath('cautions.${idx}.fullWidth', this.checked)" class="rounded text-indigo-600">
+                                <span>横幅いっぱいに表示する（2カラム結合）</span>
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else if (tab === 'area') {
+        const ag = appData.areaGuide;
+        container.innerHTML = `
+            <div class="space-y-5">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">周辺マップ・宿泊先ピン設定</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">上部案内バナー文</label>
+                            <textarea rows="2" placeholder="例：ここに掲載しているのはほんの一部！魅力的なスポットが他にもたくさんあるので、ぜひ調べてみてください✨" oninput="updateDataByPath('areaGuide.bannerText', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">${escapeHtml(ag.bannerText)}</textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">宿泊先の緯度 (Lat)</label>
+                                <input type="number" step="any" value="${ag.hotelLat}" placeholder="例：34.75405" oninput="updateDataByPath('areaGuide.hotelLat', parseFloat(this.value) || 0)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">宿泊先の経度 (Lng)</label>
+                                <input type="number" step="any" value="${ag.hotelLng}" placeholder="例：139.00159" oninput="updateDataByPath('areaGuide.hotelLng', parseFloat(this.value) || 0)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+                        <h2 class="text-base font-bold text-slate-800">周辺スポット (${ag.spots.length}件)</h2>
+                        <button type="button" onclick="addAreaSpot()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                            <i class="fas fa-plus mr-1"></i>スポット追加
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${ag.spots.map((sp, idx) => `
+                            <div class="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-indigo-600">#${idx + 1} ${escapeHtml(sp.shortName || '新規スポット')}</span>
+                                    <button type="button" onclick="removeAreaSpot(${idx})" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash mr-1"></i>削除</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">カテゴリ</label>
+                                        <select onchange="updateDataByPath('areaGuide.spots.${idx}.category', this.value)" class="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white">
+                                            <option value="shop" ${sp.category === 'shop' ? 'selected' : ''}>買物・コンビニ</option>
+                                            <option value="sightseeing" ${sp.category === 'sightseeing' ? 'selected' : ''}>観光・レジャー</option>
+                                            <option value="gourmet" ${sp.category === 'gourmet' ? 'selected' : ''}>グルメ・温泉</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">短縮名（「すべて」表示用）</label>
+                                        <input type="text" value="${escapeHtml(sp.shortName)}" placeholder="例：セブンイレブン" oninput="updateDataByPath('areaGuide.spots.${idx}.shortName', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">正式名称</label>
+                                    <input type="text" value="${escapeHtml(sp.name)}" placeholder="例：セブン-イレブン 伊豆河津駅前店" oninput="updateDataByPath('areaGuide.spots.${idx}.name', this.value)" class="w-full text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">説明文</label>
+                                    <textarea rows="2" placeholder="例：駅前にある便利なコンビニ。ちょっとした買い出しに便利です。" oninput="updateDataByPath('areaGuide.spots.${idx}.desc', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">${escapeHtml(sp.desc)}</textarea>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">所要時間（短縮）</label>
+                                        <input type="text" value="${escapeHtml(sp.accessShort)}" placeholder="例：車約5分" oninput="updateDataByPath('areaGuide.spots.${idx}.accessShort', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">所要時間（詳細）</label>
+                                        <input type="text" value="${escapeHtml(sp.accessDetail)}" placeholder="例：車 約5分 / 徒歩 約15分" oninput="updateDataByPath('areaGuide.spots.${idx}.accessDetail', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">営業時間（任意）</label>
+                                        <input type="text" value="${escapeHtml(sp.hours)}" placeholder="例：24時間営業 / 9:00〜21:00" oninput="updateDataByPath('areaGuide.spots.${idx}.hours', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">住所</label>
+                                        <input type="text" value="${escapeHtml(sp.address)}" placeholder="例：静岡県賀茂郡河津町浜155-2" oninput="updateDataByPath('areaGuide.spots.${idx}.address', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">地図ピン緯度 (Lat)</label>
+                                        <input type="number" step="any" value="${sp.lat}" placeholder="例：34.7485" oninput="updateDataByPath('areaGuide.spots.${idx}.lat', parseFloat(this.value) || 0)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500">地図ピン経度 (Lng)</label>
+                                        <input type="number" step="any" value="${sp.lng}" placeholder="例：138.9918" oninput="updateDataByPath('areaGuide.spots.${idx}.lng', parseFloat(this.value) || 0)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (tab === 'checklist') {
+        const items = appData.checklist;
+        container.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <h2 class="text-base font-bold text-slate-800">持ち物リスト (${items.length}項目)</h2>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-checklist-input" placeholder="例：財布、携帯電話、充電器、水着など" onkeydown="if(event.key==='Enter'){addChecklistItem();}" class="flex-1 text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                    <button type="button" onclick="addChecklistItem()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                        <i class="fas fa-plus mr-1"></i>追加
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    ${items.map((item, idx) => `
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                            <span class="text-xs font-mono text-slate-400 w-5">${idx + 1}.</span>
+                            <input type="text" value="${escapeHtml(item)}" placeholder="例：バスタオル・歯磨きセット" oninput="updateDataByPath('checklist.${idx}', this.value)" class="flex-1 text-xs font-medium bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500">
+                            <button type="button" onclick="removeChecklistItem(${idx})" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * 各リストの追加・削除・並び替えアクション
+ */
+function addAccessLine() {
+    appData.plan.accessLines.push({ icon: "fas fa-walking", text: "" });
+    renderEditorTab('plan');
+    saveDraftAndRefreshPreview(true);
+}
+function removeAccessLine(idx) {
+    appData.plan.accessLines.splice(idx, 1);
+    renderEditorTab('plan');
+    saveDraftAndRefreshPreview(true);
+}
+
+function addSharedFacility() {
+    appData.facility.sharedFacilities.push({
+        title: "",
+        desc: "",
+        image: ""
+    });
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+    showToast('共有設備を追加しました');
+}
+function removeSharedFacility(idx) {
+    appData.facility.sharedFacilities.splice(idx, 1);
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+    showToast('共有設備を削除しました');
+}
+
+function addAmenityCategory() {
+    appData.facility.amenityCategories.push({
+        title: "",
+        icon: "fas fa-check-circle",
+        color: "blue",
+        items: []
+    });
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+}
+function removeAmenityCategory(idx) {
+    appData.facility.amenityCategories.splice(idx, 1);
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+}
+function updateAmenityItems(idx, rawStr) {
+    appData.facility.amenityCategories[idx].items = rawStr
+        .split(/[,、]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    saveDraftAndRefreshPreview();
+}
+
+function addFacilityNotice() {
+    appData.facility.notices.push("");
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+}
+function removeFacilityNotice(idx) {
+    appData.facility.notices.splice(idx, 1);
+    renderEditorTab('facility');
+    saveDraftAndRefreshPreview(true);
+}
+
+function addScheduleDay() {
+    const nextNum = appData.schedule.days.length + 1;
+    appData.schedule.days.push({
+        dayLabel: `${nextNum}日目`,
+        dateLabel: "",
+        events: [
+            {
+                time: "",
+                title: "",
+                desc: "",
+                style: "normal",
+                icon: ""
+            }
+        ]
+    });
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+    showToast(`${nextNum}日目の日程ブロックを追加しました`);
+}
+function removeScheduleDay(dIdx) {
+    appData.schedule.days.splice(dIdx, 1);
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+    showToast('日程ブロックを削除しました');
+}
+function toggleOtherDaysBox(checked) {
+    appData.schedule.showOtherDaysBox = checked;
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+}
+
+function addScheduleEvent(dIdx) {
+    appData.schedule.days[dIdx].events.push({
+        time: "",
+        title: "",
+        desc: "",
+        style: "normal",
+        icon: ""
+    });
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+    showToast('タイムラインに予定を追加しました');
+}
+function removeScheduleEvent(dIdx, eIdx) {
+    appData.schedule.days[dIdx].events.splice(eIdx, 1);
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+    showToast('予定を削除しました');
+}
+function moveScheduleEvent(dIdx, eIdx, dir) {
+    const events = appData.schedule.days[dIdx].events;
+    const target = eIdx + dir;
+    if (target < 0 || target >= events.length) return;
+    const temp = events[eIdx];
+    events[eIdx] = events[target];
+    events[target] = temp;
+    renderEditorTab('schedule');
+    saveDraftAndRefreshPreview(true);
+}
+
+function addCautionItem() {
+    appData.cautions.push({
+        title: "",
+        desc: "",
+        color: "blue",
+        icon: "fas fa-exclamation-circle",
+        fullWidth: false
+    });
+    renderEditorTab('caution');
+    saveDraftAndRefreshPreview(true);
+    showToast('注意事項を追加しました');
+}
+function removeCautionItem(idx) {
+    appData.cautions.splice(idx, 1);
+    renderEditorTab('caution');
+    saveDraftAndRefreshPreview(true);
+    showToast('注意事項を削除しました');
+}
+
+function addAreaSpot() {
+    appData.areaGuide.spots.push({
+        shortName: "",
+        name: "",
+        category: "sightseeing",
+        icon: "fas fa-map-pin",
+        desc: "",
+        hours: "",
+        address: "",
+        accessShort: "",
+        accessDetail: "",
+        mapQuery: "",
+        lat: (Number(appData.areaGuide.hotelLat) || 35.6812) + 0.004,
+        lng: (Number(appData.areaGuide.hotelLng) || 139.7671) - 0.004,
+        mapPopup: ""
+    });
+    renderEditorTab('area');
+    saveDraftAndRefreshPreview(true);
+    showToast('周辺スポットを追加しました');
+}
+function removeAreaSpot(idx) {
+    appData.areaGuide.spots.splice(idx, 1);
+    renderEditorTab('area');
+    saveDraftAndRefreshPreview(true);
+    showToast('周辺スポットを削除しました');
+}
+
+function addChecklistItem() {
+    const input = document.getElementById('new-checklist-input');
+    const val = input.value.trim();
+    if (!val) return;
+    if (appData.checklist.length === 1 && appData.checklist[0] === '') {
+        appData.checklist[0] = val;
+    } else {
+        appData.checklist.push(val);
+    }
+    input.value = '';
+    renderEditorTab('checklist');
+    saveDraftAndRefreshPreview(true);
+    showToast(`「${val}」を追加しました`);
+}
+function removeChecklistItem(idx) {
+    appData.checklist.splice(idx, 1);
+    renderEditorTab('checklist');
+    saveDraftAndRefreshPreview(true);
+}
+
+function loadSampleDataWithConfirm() {
+    showCustomConfirm(
+        'サンプルデータの読み込み',
+        'サンプル例として「HAIKARA 夏合宿のしおり 2026」の完成データを読み込みます。現在の入力内容は上書きされますがよろしいですか？',
+        () => {
+            appData = normalizeShioriData(SAMPLE_SHIORI_DATA);
+            saveDraftAndRefreshPreview(true);
+            renderEditorTab(currentTab);
+            showToast('「夏合宿のしおり」サンプルを読み込みました！');
+        }
+    );
+}
+
+/**
+ * 完全なスタンドアロンHTMLコードを生成するジェネレーターエンジン
+ */
+function generateShioriHTML(data, isPreviewMode = false) {
+    const m = data.meta;
+    const p = data.plan;
+    const f = data.facility;
+    const s = data.schedule;
+    const cList = data.cautions;
+    const ag = data.areaGuide;
+
+    // プレビュー時のみ未入力箇所に薄いガイド文を表示するためのヘルパー
+    const valOrGuide = (val, guideText) => {
+        if (val && String(val).trim() !== '') return escapeHtml(val);
+        return isPreviewMode ? `<span class="opacity-45">${escapeHtml(guideText)}</span>` : '';
+    };
+
+    const getImgSrc = (src, fallbackLabel) => {
+        if (!src) {
+            return `https://placehold.co/800x500/e2e8f0/64748b?text=${encodeURIComponent(fallbackLabel || 'PHOTO')}`;
+        }
+        return src;
+    };
+
+    const heroBgCss = m.heroImage
+        ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('${escapeHtml(m.heroImage)}')`
+        : `linear-gradient(135deg, ${m.primaryColor} 0%, #475569 100%)`;
+
+    // 共有設備HTML生成
+    const sharedFacilitiesHtml = f.sharedFacilities.map((item, idx) => `
+                    <div class="rounded-xl overflow-hidden group cursor-zoom-in">
+                        <div class="relative aspect-video overflow-hidden rounded-xl mb-3 shadow-sm bg-gray-100">
+                            <img src="${escapeHtml(getImgSrc(item.image, item.title || `設備写真 ${idx + 1}`))}" alt="${escapeHtml(item.title || `設備 ${idx + 1}`)}" onerror="this.src='https://placehold.co/800x500/e2e8f0/64748b?text=${encodeURIComponent(item.title || 'PHOTO')}'" class="lightbox-trigger w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex justify-center items-center transition-colors pointer-events-none">
+                                <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </div>
+                        </div>
+                        <p class="font-bold text-gray-800 text-sm md:text-base mb-1">${valOrGuide(item.title, '（共有設備名を入力）')}</p>
+                        <p class="text-xs md:text-sm text-gray-500">${valOrGuide(item.desc, '（設備の説明文を入力）')}</p>
+                    </div>`).join('\n');
+
+    // アメニティカテゴリHTML生成
+    const colorMap = {
+        blue: { box: 'bg-blue-50/50 border-blue-100', title: 'text-blue-800 border-blue-200', icon: 'text-blue-500' },
+        orange: { box: 'bg-orange-50/50 border-orange-100', title: 'text-orange-800 border-orange-200', icon: 'text-orange-500' },
+        green: { box: 'bg-green-50/50 border-green-100', title: 'text-green-800 border-green-200', icon: 'text-green-500' },
+        purple: { box: 'bg-purple-50/50 border-purple-100', title: 'text-purple-800 border-purple-200', icon: 'text-purple-500' }
+    };
+
+    const amenitiesHtml = f.amenityCategories.map(cat => {
+        const cm = colorMap[cat.color] || colorMap.blue;
+        const colSpan = cat.fullWidth ? 'md:col-span-2' : '';
+        const gridCols = cat.fullWidth ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2';
+        const displayItems = cat.items.length > 0 ? cat.items : (isPreviewMode ? ['（アメニティ1）', '（アメニティ2）'] : []);
+        return `
+                    <div class="${cm.box} p-4 rounded-xl border ${colSpan}">
+                        <h6 class="font-bold ${cm.title} mb-3 border-b pb-2"><i class="${escapeHtml(cat.icon)} mr-2"></i>${valOrGuide(cat.title, '（カテゴリ名）')}</h6>
+                        <ul class="grid ${gridCols} gap-y-2 gap-x-4 text-sm text-gray-700">
+                            ${displayItems.map(it => `<li class="flex items-center"><i class="fas fa-check ${cm.icon} mr-2"></i> ${escapeHtml(it)}</li>`).join('\n                            ')}
+                        </ul>
+                    </div>`;
+    }).join('\n');
+
+    // 複数日タイムラインHTML生成
+    const validNotices = f.notices.filter(n => n && n.trim() !== '');
+    const scheduleDaysHtml = s.days.map((day, dIdx) => {
+        const eventsHtml = day.events.map(ev => {
+            const iconHtml = ev.icon ? `<i class="${escapeHtml(ev.icon)} mr-2"></i>` : '';
+            const timeDisp = valOrGuide(ev.time, '00:00');
+            const titleDisp = valOrGuide(ev.title, '（予定タイトルを入力）');
+            const descDisp = ev.desc ? escapeHtml(ev.desc) : (isPreviewMode ? '<span class="opacity-45">（予定の詳細メモ）</span>' : '');
+
+            if (ev.style === 'orange-box') {
+                return `
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute w-5 h-5 bg-primary rounded-full -left-[11px] top-1 ring-4 ring-white z-10"></div>
+                    <div class="flex flex-col md:flex-row md:items-start">
+                        <div class="text-2xl font-bold text-primary w-28 flex-shrink-0 pt-0.5">${timeDisp}</div>
+                        <div class="mt-2 md:mt-0 flex-grow w-full">
+                            <div class="bg-orange-50 p-5 rounded-2xl border border-orange-100 w-full">
+                                <h4 class="text-xl font-bold text-orange-800">${iconHtml}${titleDisp}</h4>
+                                ${descDisp ? `<p class="text-base text-orange-700 mt-2">${descDisp}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (ev.style === 'red-box') {
+                return `
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute w-5 h-5 bg-primary rounded-full -left-[11px] top-1 ring-4 ring-white z-10"></div>
+                    <div class="flex flex-col md:flex-row md:items-start">
+                        <div class="text-2xl font-bold text-primary w-28 flex-shrink-0 pt-0.5">${timeDisp}</div>
+                        <div class="mt-2 md:mt-0 flex-grow w-full">
+                            <div class="bg-red-50 p-5 rounded-2xl border border-red-100 w-full">
+                                <h4 class="text-xl font-bold text-red-800">${iconHtml}${titleDisp}</h4>
+                                ${descDisp ? `<p class="text-base text-red-700 mt-2">${descDisp}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                const titleColor = ev.style === 'red-title' ? 'text-red-500' : 'text-textDark';
+                return `
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute w-5 h-5 bg-primary rounded-full -left-[11px] top-1 ring-4 ring-white z-10"></div>
+                    <div class="flex flex-col md:flex-row md:items-start">
+                        <div class="text-2xl font-bold text-primary w-28 flex-shrink-0 pt-0.5">${timeDisp}</div>
+                        <div class="mt-2 md:mt-0 flex-grow">
+                            <h4 class="text-xl font-bold ${titleColor}">${iconHtml}${titleDisp}</h4>
+                            ${descDisp ? `<p class="text-base text-textLight mt-2 leading-relaxed">${descDisp}</p>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }).join('\n');
+
+        return `
+            <div class="${dIdx > 0 ? 'mt-14 pt-10 border-t border-gray-200' : ''}">
+                <div class="mb-10 flex justify-between items-end border-b-2 border-primary/20 pb-4">
+                    <h3 class="text-3xl font-serif font-bold text-textDark">${valOrGuide(day.dayLabel, `${dIdx + 1}日目`)}</h3>
+                    <span class="text-lg md:text-xl font-medium text-primary bg-primary/10 px-5 py-2 rounded-full">${valOrGuide(day.dateLabel, '（日付を入力）')}</span>
+                </div>
+
+                <!-- タイムライン -->
+                <div class="relative border-l-2 border-gray-200 ml-4 md:ml-8 space-y-12 pb-6">
+${eventsHtml}
+                </div>
+            </div>`;
+    }).join('\n');
+
+    // 注意事項HTML生成
+    const cautionColorMap = {
+        red: { border: 'border-red-400', text: 'text-red-400' },
+        yellow: { border: 'border-yellow-400', text: 'text-yellow-400' },
+        blue: { border: 'border-blue-400', text: 'text-blue-400' },
+        green: { border: 'border-green-400', text: 'text-green-400' },
+        purple: { border: 'border-purple-400', text: 'text-purple-400' }
+    };
+    const cautionsHtml = cList.map(c => {
+        const cm = cautionColorMap[c.color] || cautionColorMap.red;
+        const spanClass = c.fullWidth ? 'md:col-span-2 ' : '';
+        return `
+            <div class="bg-white p-8 rounded-3xl shadow-sm border-l-8 ${cm.border} ${spanClass}flex items-start">
+                <div class="${cm.text} text-3xl mr-5 mt-1"><i class="${escapeHtml(c.icon)}"></i></div>
+                <div>
+                    <h4 class="font-bold text-xl mb-2">${valOrGuide(c.title, '（注意事項のタイトル）')}</h4>
+                    <p class="text-base text-textLight leading-relaxed">${valOrGuide(c.desc, '（注意事項の詳細文を入力します）')}</p>
+                </div>
+            </div>`;
+    }).join('\n');
+
+    // AREA GUIDE スポットHTML生成
+    const catTheme = {
+        shop: { cardBg: 'bg-blue-50/50 border-blue-100', detailBg: 'bg-blue-50/30 border-blue-100', iconBg: 'bg-blue-100 text-blue-500', badge: 'text-blue-600 bg-blue-50', btn: 'text-blue-500 border-blue-300 hover:bg-blue-500' },
+        sightseeing: { cardBg: 'bg-green-50/50 border-green-100', detailBg: 'bg-green-50/30 border-green-100', iconBg: 'bg-green-100 text-green-600', badge: 'text-green-700 bg-green-50', btn: 'text-green-600 border-green-300 hover:bg-green-500' },
+        gourmet: { cardBg: 'bg-orange-50/50 border-orange-100', detailBg: 'bg-orange-50/30 border-orange-100', iconBg: 'bg-orange-100 text-orange-500', badge: 'text-orange-600 bg-orange-50', btn: 'text-orange-500 border-orange-300 hover:bg-orange-500' }
+    };
+
+    const allSpotsMiniHtml = ag.spots.map(sp => {
+        const th = catTheme[sp.category] || catTheme.shop;
+        return `
+                <div class="${th.cardBg} p-3 rounded-xl border flex items-center">
+                    <div class="${th.iconBg} w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0"><i class="${escapeHtml(sp.icon)}"></i></div>
+                    <div>
+                        <div class="font-bold text-sm text-gray-800 line-clamp-1">${valOrGuide(sp.shortName, '（スポット名）')}</div>
+                        <div class="text-[10px] text-gray-500">${valOrGuide(sp.accessShort, '（所要時間）')}</div>
+                    </div>
+                </div>`;
+    }).join('\n');
+
+    const renderCategoryCards = (catKey) => {
+        return ag.spots.filter(sp => sp.category === catKey).map(sp => {
+            const th = catTheme[catKey] || catTheme.shop;
+            const query = encodeURIComponent(sp.mapQuery || sp.name || '東京駅');
+            return `
+                <div class="${th.detailBg} p-4 rounded-xl border flex flex-col justify-between">
+                    <div class="flex items-start">
+                        <div class="${th.iconBg} w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0"><i class="${escapeHtml(sp.icon)}"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">${valOrGuide(sp.name, '（スポット正式名称）')}</h4>
+                            <p class="text-xs text-gray-500 mt-1 mb-2">${valOrGuide(sp.desc, '（スポットの説明を入力）')}${sp.hours ? `<br><span class="text-gray-600 font-medium">【営業時間】${escapeHtml(sp.hours)}</span>` : ''}</p>
+                            ${sp.address ? `<p class="text-[10px] text-gray-400 mb-2">${escapeHtml(sp.address)}</p>` : ''}
+                            <div class="flex items-center text-xs font-medium ${th.badge} px-2 py-1 rounded inline-block">
+                                <i class="fas fa-route mr-1"></i>${valOrGuide(sp.accessDetail, '（アクセス情報）')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <a href="https://maps.google.com/?q=${query}" target="_blank" class="inline-block text-xs font-bold ${th.btn} border px-3 py-1.5 rounded-full hover:text-white transition">経路案内 <i class="fas fa-external-link-alt ml-1"></i></a>
+                    </div>
+                </div>`;
+        }).join('\n');
+    };
+
+    // Leaflet マップデータ用JSON
+    const mapLocationsData = [
+        {
+            id: 'hotel',
+            category: 'hotel',
+            lat: Number(ag.hotelLat) || 35.681236,
+            lng: Number(ag.hotelLng) || 139.767125,
+            popup: `<b class="text-primary">${escapeHtml(p.hotelName || '宿泊先')}</b><br>${escapeHtml(ag.hotelPopupDesc || '今回の宿泊先です。')}`
+        },
+        ...ag.spots.map(sp => ({
+            category: sp.category,
+            lat: Number(sp.lat) || 35.683,
+            lng: Number(sp.lng) || 139.769,
+            popup: `<b>${escapeHtml(sp.name || sp.shortName || 'スポット')}</b><br>${escapeHtml(sp.mapPopup || sp.accessShort || '')}`
+        }))
+    ];
+
+    const checklistDisplayItems = data.checklist.filter(it => it && it.trim() !== '');
+    const checklistForScript = checklistDisplayItems.length > 0
+        ? checklistDisplayItems
+        : (isPreviewMode ? ['（持ち物リストを追加するとここに表示されます）'] : []);
+
+    return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(m.pageTitle || '旅のしおり')}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""><\/script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '${escapeHtml(m.primaryColor)}',
+                        secondary: '${escapeHtml(m.secondaryColor)}',
+                        background: '${escapeHtml(m.bgColor)}',
+                        textDark: '#4a4543',
+                        textLight: '#8c8582',
+                    },
+                    fontFamily: {
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                        serif: ['"Kiwi Maru"', 'serif'],
+                    }
+                }
+            }
+        }
+    <\/script>
+
+    <style>
+        body {
+            background-color: ${escapeHtml(m.bgColor)};
+            color: #4a4543;
+            scroll-behavior: smooth;
+        }
+        
+        .hero-bg {
+            background-color: #64748b;
+            background-image: ${heroBgCss};
+            background-size: cover;
+            background-position: center;
+            background-attachment: ${isPreviewMode ? 'scroll' : 'fixed'};
+        }
+
+        .section-title {
+            font-family: '"Kiwi Maru"', serif;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background-color: ${escapeHtml(m.primaryColor)};
+            border-radius: 2px;
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="antialiased relative">
+
+<!-- Navigation -->
+<nav class="fixed w-full z-50 transition-all duration-300 py-2" id="navbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex-shrink-0">
+                <a href="#" class="font-serif text-xl font-bold text-white drop-shadow-md transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-5 lg:space-x-6 font-medium text-sm lg:text-base">
+                    <a href="#plan" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">PLAN</a>
+                    <a href="#facility" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">FACILITY</a>
+                    <a href="#schedule" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">SCHEDULE</a>
+                    <a href="#caution" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CAUTION</a>
+                    <a href="#area-guide" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">AREA GUIDE</a>
+                    <a href="#checklist" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CHECK LIST</a>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-btn" class="text-white hover:text-primary focus:outline-none drop-shadow-md transition-colors nav-btn">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full left-0 top-full border-t border-gray-100">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+            <a href="#plan" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">PLAN (旅の基本)</a>
+            <a href="#facility" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">FACILITY (施設)</a>
+            <a href="#schedule" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">SCHEDULE (日程)</a>
+            <a href="#caution" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CAUTION (注意)</a>
+            <a href="#area-guide" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">AREA GUIDE (周辺・アクセス)</a>
+            <a href="#checklist" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CHECK LIST (持ち物)</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header class="hero-bg h-screen flex items-center justify-center relative">
+    <div class="text-center px-4 fade-in visible">
+        <p class="text-white text-lg md:text-xl mb-2 tracking-widest font-light">${valOrGuide(m.heroSubtitle, 'TRAVEL NOTE')}</p>
+        <h1 class="font-serif text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">${valOrGuide(m.heroTitle, '旅のしおりタイトル')}</h1>
+        <p class="text-white text-2xl md:text-3xl font-medium tracking-wider mb-8 drop-shadow-md">${valOrGuide(m.heroOrg, '団体名・サブタイトル')}</p>
+        
+        <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 inline-block border border-white/30 text-white shadow-xl">
+            <p class="text-lg md:text-xl mb-1"><i class="far fa-calendar-alt mr-2"></i> ${valOrGuide(m.heroDate, 'YYYY.MM.DD - MM.DD')}</p>
+            <p class="text-lg md:text-xl font-bold"><i class="fas fa-map-marker-alt mr-2 text-red-400"></i> ${valOrGuide(m.heroLocation, '行き先エリア')}</p>
+        </div>
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <a href="#plan" class="text-white opacity-80 hover:opacity-100">
+            <i class="fas fa-chevron-down text-3xl"></i>
+        </a>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-16 space-y-24">
+
+    <!-- PLAN Section -->
+    <section id="plan" class="pt-8 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">PLAN</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">旅の基本情報</p>
+        </div>
+        
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="h-64 sm:h-80 md:h-[450px] overflow-hidden relative group bg-gray-200">
+                <img src="${escapeHtml(getImgSrc(p.hotelImage, p.hotelName || '宿泊先外観'))}" alt="${escapeHtml(p.hotelName || '宿泊先')}外観" onerror="this.src='https://placehold.co/1000x600/e2e8f0/64748b?text=${encodeURIComponent(p.hotelName || 'HOTEL PHOTO')}'" class="w-full h-full object-cover lightbox-trigger cursor-zoom-in group-hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end pointer-events-none">
+                    <h3 class="text-white text-2xl md:text-3xl font-bold p-6 w-full flex justify-between items-center">
+                        <span>宿泊先：${valOrGuide(p.hotelName, '（宿泊先名を入力）')}</span>
+                        <span class="text-sm font-normal bg-primary px-4 py-1.5 rounded-full shadow-lg">${valOrGuide(p.durationBadge, '〇泊〇日')}</span>
+                    </h3>
+                </div>
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none flex justify-center items-center">
+                    <i class="fas fa-search-plus text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md"></i>
+                </div>
+            </div>
+            
+            <div class="p-4 sm:p-8 md:p-10 space-y-8">
+                <!-- 基本情報 -->
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6 bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100">
+                    <div class="bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center text-primary flex-shrink-0">
+                        <i class="fas fa-building text-2xl"></i>
+                    </div>
+                    <div class="w-full">
+                        <h4 class="text-xl font-bold mb-2">施設情報</h4>
+                        <p class="text-textLight text-sm mb-1">${valOrGuide(p.postalAndAddress, '（郵便番号・住所を入力）')}</p>
+                        <p class="text-textDark font-medium text-base mb-4">
+                            ${p.accessLines.map(line => `<i class="${escapeHtml(line.icon)} mr-1 text-gray-400"></i> ${valOrGuide(line.text, '（最寄駅やスポットからのアクセスを入力）')}`).join('<br>')}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-3">
+                            ${p.phone ? `<a href="tel:${escapeHtml(p.phone)}" class="inline-flex items-center justify-center text-primary bg-white hover:bg-primary hover:text-white border border-primary font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm"><i class="fas fa-phone-alt mr-2"></i> ${escapeHtml(p.phone)}</a>` : ''}
+                            ${p.websiteUrl ? `<a href="${escapeHtml(p.websiteUrl)}" target="_blank" class="inline-flex items-center justify-center text-white bg-primary hover:opacity-90 border border-transparent font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm"><i class="fas fa-external-link-alt mr-2"></i> 公式サイトを見る</a>` : ''}
+                            <a href="#area-guide" class="inline-flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm">
+                                <i class="fas fa-map mr-2"></i> 周辺マップを見る
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 宿泊先マップ -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4 flex items-center text-primary"><i class="fas fa-map-marker-alt mr-2"></i>宿泊先マップ</h4>
+                    <div class="w-full h-64 sm:h-80 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-3">
+                        <iframe src="https://maps.google.com/maps?q=${encodeURIComponent(p.mapQuery || '東京駅')}&t=&z=13&ie=UTF8&iwloc=&output=embed" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                    <div class="text-right">
+                        <a href="https://maps.google.com/maps?q=${encodeURIComponent(p.mapQuery || '東京駅')}" target="_blank" class="inline-flex items-center bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white px-5 py-2 rounded-full transition-colors border border-primary/20 text-sm shadow-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>Google Mapsで開く
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 集合情報 -->
+                <div class="flex items-start bg-orange-50/50 p-6 rounded-2xl border border-orange-100">
+                    <div class="bg-orange-100 w-14 h-14 rounded-full flex items-center justify-center text-secondary flex-shrink-0 mr-4 sm:mr-5">
+                        <i class="fas fa-flag text-2xl"></i>
+                    </div>
+                    <div class="w-full">
+                        <h4 class="text-xl font-bold mb-2">初日の集合場所</h4>
+                        <div class="text-textDark text-lg mt-1 flex flex-wrap items-center gap-y-2 gap-x-1 sm:gap-x-2">
+                            <span class="font-bold text-primary text-xl w-full block mb-1">${valOrGuide(p.meetingDateTime, '（集合日時を入力）')}</span>
+                            <span class="inline-block">${valOrGuide(p.meetingPlace, '（集合場所を入力）')}</span>
+                            ${p.meetingBadge ? `<span class="inline-block text-sm text-red-500 border border-red-500 rounded px-2 py-0.5 bg-red-50 font-bold whitespace-nowrap">${escapeHtml(p.meetingBadge)}</span>` : ''}
+                        </div>
+                        ${p.meetingNote ? `<p class="text-textLight text-base mt-4 bg-white px-3 py-2 rounded-lg inline-block shadow-sm border border-gray-100"><i class="fas fa-train mr-2 text-primary"></i> ${escapeHtml(p.meetingNote)}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FACILITY Section -->
+    <section id="facility" class="pt-8 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">FACILITY</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">施設・アメニティ案内</p>
+        </div>
+
+        <div class="bg-indigo-50/30 rounded-3xl p-4 sm:p-8 md:p-10 border border-indigo-100 shadow-sm space-y-12">
+            
+            <div class="text-center mb-6">
+                <p class="text-base text-textLight">${valOrGuide(f.introText, '（施設紹介の導入メッセージを入力します）')}</p>
+            </div>
+
+            <!-- 間取り・客室 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
+                <!-- 間取り図 -->
+                <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                    <h5 class="font-bold text-xl text-primary mb-4 flex items-center"><i class="fas fa-map mr-2 text-2xl w-8"></i>${valOrGuide(f.floorPlanTitle, '館内マップ・間取り')}</h5>
+                    <div class="rounded-xl overflow-hidden bg-gray-50 border border-gray-100 p-2 flex justify-center flex-grow group relative cursor-zoom-in mb-4">
+                        <img src="${escapeHtml(getImgSrc(f.floorPlanImage, f.floorPlanTitle || '間取り図'))}" alt="${escapeHtml(f.floorPlanTitle || '間取り図')}" onerror="this.src='https://placehold.co/800x600/f1f5f9/64748b?text=FLOOR+PLAN'" class="lightbox-trigger w-full h-full object-contain max-h-[300px]">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none flex justify-center items-center">
+                            <i class="fas fa-search-plus text-gray-600 text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">${valOrGuide(f.floorPlanDesc, '（館内フロア構成などの説明を入力）')}</p>
+                </div>
+
+                <!-- 客室 -->
+                <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                    <h5 class="font-bold text-xl text-primary mb-4 flex items-center"><i class="fas fa-bed mr-2 text-2xl w-8"></i>${valOrGuide(f.roomTitle, '客室案内')}</h5>
+                    <div class="rounded-xl overflow-hidden group relative cursor-zoom-in flex-grow aspect-[4/3] mb-4 bg-gray-200">
+                        <img src="${escapeHtml(getImgSrc(f.roomImage, f.roomTitle || '客室写真'))}" alt="${escapeHtml(f.roomTitle || '客室')}" onerror="this.src='https://placehold.co/800x600/e2e8f0/64748b?text=ROOM+PHOTO'" class="lightbox-trigger w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none flex justify-center items-center">
+                            <i class="fas fa-search-plus text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">${valOrGuide(f.roomDesc, '（客室の雰囲気や設備の説明を入力）')}</p>
+                </div>
+            </div>
+
+            <!-- 共有設備 -->
+            <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h5 class="font-bold text-xl text-primary mb-6 flex items-center"><i class="fas fa-star text-yellow-400 mr-2 text-2xl w-8"></i>充実の共有設備</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+${sharedFacilitiesHtml}
+                </div>
+            </div>
+
+            <!-- アメニティ・設備リスト -->
+            <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h5 class="font-bold text-xl text-primary mb-6 flex items-center"><i class="fas fa-concierge-bell mr-2 text-2xl w-8"></i>設備・アメニティ詳細</h5>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+${amenitiesHtml}
+                </div>
+                
+                ${validNotices.length > 0 ? `
+                <div class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
+                    <p class="text-sm font-bold text-red-600 mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> ご注意</p>
+                    <ul class="text-xs md:text-sm text-red-500 list-disc list-inside space-y-1">
+                        ${validNotices.map(n => `<li>${escapeHtml(n)}</li>`).join('\n                        ')}
+                    </ul>
+                </div>` : ''}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SCHEDULE Section -->
+    <section id="schedule" class="pt-8 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">SCHEDULE</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">旅行日程</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 md:p-12">
+${scheduleDaysHtml}
+
+            ${s.showOtherDaysBox ? `
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <div class="bg-gray-50 rounded-2xl p-6 text-center cursor-pointer hover:bg-gray-100 transition-colors shadow-sm" id="day2-trigger">
+                    <p class="font-bold text-lg text-textDark"><i class="fas fa-calendar-day mr-2 text-primary text-xl"></i> ${valOrGuide(s.otherDaysTitle, '2日目・3日目の予定')}</p>
+                    <p class="text-base text-textLight mt-2" id="day2-text">タップして確認</p>
+                    
+                    <div id="day2-content" class="hidden mt-4 pt-4 border-t border-gray-200 text-left text-textDark animate-[pulse_0.3s_ease-in-out]">
+                        <p class="mb-2 font-bold text-primary">${valOrGuide(s.otherDaysSubtitle, '2日目・3日目の予定について')}</p>
+                        <p class="text-sm md:text-base leading-relaxed">${valOrGuide(s.otherDaysDesc, '（タップした時に開く詳細メッセージを入力します）')}</p>
+                    </div>
+                </div>
+            </div>` : ''}
+        </div>
+    </section>
+
+    <!-- CAUTION Section -->
+    <section id="caution" class="pt-8 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">CAUTION</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">注意事項</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+${cautionsHtml}
+        </div>
+    </section>
+
+    <!-- AREA GUIDE Section -->
+    <section id="area-guide" class="pt-8 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">AREA GUIDE</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">周辺施設・アクセス</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-8">
+            
+            <div class="mb-6 text-center bg-indigo-50/50 py-3 px-4 rounded-xl border border-indigo-100">
+                <p class="text-textDark text-sm md:text-base">
+                    <i class="fas fa-search-location text-primary mr-1"></i> ${valOrGuide(ag.bannerText, '（周辺エリアの案内メッセージを入力します）')}
+                </p>
+            </div>
+
+            <!-- 周辺施設 Map (Leaflet) -->
+            <div class="w-full h-80 md:h-[450px] rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-8 relative z-0">
+                <div id="area-map" class="w-full h-full"></div>
+            </div>
+
+            <!-- タブ切り替えボタン -->
+            <div class="flex space-x-2 md:space-x-4 mb-6 overflow-x-auto pb-3 hide-scrollbar justify-start md:justify-center px-1">
+                <button class="area-tab-btn active flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm bg-primary text-white shadow-sm transition-colors border border-primary" data-target="guide-all" data-category="all">
+                    <i class="fas fa-map-marked-alt mr-1"></i> すべて
+                </button>
+                <button class="area-tab-btn flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm bg-gray-50 text-gray-500 hover:bg-gray-100 shadow-sm transition-colors border border-gray-200" data-target="guide-shopping" data-category="shop">
+                    <i class="fas fa-shopping-cart mr-1"></i> 買物・コンビニ
+                </button>
+                <button class="area-tab-btn flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm bg-gray-50 text-gray-500 hover:bg-gray-100 shadow-sm transition-colors border border-gray-200" data-target="guide-sightseeing" data-category="sightseeing">
+                    <i class="fas fa-camera-retro mr-1"></i> 観光・レジャー
+                </button>
+                <button class="area-tab-btn flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm bg-gray-50 text-gray-500 hover:bg-gray-100 shadow-sm transition-colors border border-gray-200" data-target="guide-gourmet" data-category="gourmet">
+                    <i class="fas fa-utensils mr-1"></i> グルメ・温泉
+                </button>
+            </div>
+
+            <!-- タブコンテンツ: すべて (簡易表示) -->
+            <div id="guide-all" class="area-tab-content grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
+${allSpotsMiniHtml}
+            </div>
+
+            <!-- タブコンテンツ: 買物・コンビニ -->
+            <div id="guide-shopping" class="area-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+${renderCategoryCards('shop')}
+            </div>
+
+            <!-- タブコンテンツ: 観光・レジャー -->
+            <div id="guide-sightseeing" class="area-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+${renderCategoryCards('sightseeing')}
+            </div>
+
+            <!-- タブコンテンツ: グルメ・温泉 -->
+            <div id="guide-gourmet" class="area-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+${renderCategoryCards('gourmet')}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CHECK LIST Section -->
+    <section id="checklist" class="pt-8 pb-16 fade-in">
+        <div class="text-center">
+            <h2 class="text-3xl font-serif text-primary">CHECK LIST</h2>
+            <p class="text-textLight text-sm tracking-widest mt-1 mb-10">持ち物リスト</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 md:p-12">
+            <p class="text-base text-textLight mb-8 text-center bg-gray-50 py-3 rounded-xl"><i class="fas fa-info-circle mr-2 text-primary"></i> タップしてチェックを付けられます。準備の確認に活用してください。</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-5 gap-x-6" id="checklist-container">
+                <!-- Javascript will populate this list -->
+            </div>
+            
+            <div class="mt-8 text-center">
+                <a href="#facility" class="inline-block text-primary hover:text-white border border-primary hover:bg-primary px-6 py-2 rounded-full transition-colors text-sm font-medium">
+                    アメニティ・設備情報を再確認する <i class="fas fa-arrow-up ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-white border-t border-gray-200 py-12 mt-10">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+        <h2 class="font-serif text-3xl text-primary mb-4">${valOrGuide(m.footerTitle, 'HAPPY TRAVELS')}</h2>
+        <p class="text-textLight text-base">${valOrGuide(m.footerMessage, '（フッターの締めメッセージを入力します）')}</p>
+        <div class="mt-10 text-sm text-gray-400">
+            ${valOrGuide(m.footerCopyright, '© 2026 All Rights Reserved.')}
+        </div>
+    </div>
+</footer>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="fixed inset-0 z-[100] bg-black/90 hidden flex-col justify-center items-center p-4 transition-opacity duration-300 opacity-0 cursor-zoom-out backdrop-blur-sm">
+    <div class="relative w-full max-w-5xl max-h-[90vh] flex flex-col justify-center items-center pointer-events-none">
+        <img id="lightbox-img" src="" alt="拡大画像" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl pointer-events-auto cursor-default border-4 border-white/10">
+        <button id="lightbox-close" class="absolute top-[-50px] right-0 text-white/70 hover:text-white transition-colors text-4xl focus:outline-none pointer-events-auto cursor-pointer p-2">
+            <i class="fas fa-times"></i>
+        </button>
+        <p id="lightbox-caption" class="text-white mt-6 text-lg md:text-xl font-medium tracking-wide bg-black/50 px-6 py-2 rounded-full pointer-events-auto"></p>
+    </div>
+</div>
+
+<script>
+    // Navbar Scroll Effect
+    const navbar = document.getElementById('navbar');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navBrand = document.querySelector('.nav-brand');
+    const navBtn = document.querySelector('.nav-btn');
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('bg-white', 'shadow-md', 'py-1');
+            navbar.classList.remove('py-2');
+            
+            [navBrand, ...navLinks, navBtn].forEach(el => {
+                if(el && el.classList.contains('text-white')){
+                    el.classList.remove('text-white', 'drop-shadow-md');
+                    el.classList.add('text-textDark');
+                }
+            });
+        } else {
+            navbar.classList.remove('bg-white', 'shadow-md', 'py-1');
+            navbar.classList.add('py-2');
+            
+            [navBrand, ...navLinks, navBtn].forEach(el => {
+                if(el && el.classList.contains('text-textDark')){
+                    el.classList.remove('text-textDark');
+                    el.classList.add('text-white', 'drop-shadow-md');
+                }
+            });
+        }
+    });
+
+    // Mobile Menu Toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+    mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+        });
+    });
+
+    // Fade-in Animation Observer
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.05
+    };
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(element => {
+        observer.observe(element);
+    });
+
+    // 2日目・3日目の予定トグル
+    const day2Trigger = document.getElementById('day2-trigger');
+    const day2Content = document.getElementById('day2-content');
+    const day2Text = document.getElementById('day2-text');
+    
+    if (day2Trigger && day2Content) {
+        day2Trigger.addEventListener('click', () => {
+            day2Content.classList.toggle('hidden');
+            if (day2Content.classList.contains('hidden')) {
+                day2Text.textContent = 'タップして確認';
+            } else {
+                day2Text.textContent = 'タップして閉じる';
+            }
+        });
+    }
+
+    // --- Leaflet Map 初期化 & タブ切り替えロジック ---
+    let areaMap;
+    let markersLayer;
+    let mapLocations = [];
+
+    const initMap = () => {
+        if (typeof L === 'undefined') return;
+        areaMap = L.map('area-map').setView([${Number(ag.hotelLat) || 34.750}, ${Number(ag.hotelLng) || 138.995}], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(areaMap);
+
+        markersLayer = L.featureGroup().addTo(areaMap);
+
+        const hotelIcon = L.divIcon({
+            html: '<div class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white"><i class="fas fa-hotel"></i></div>',
+            className: '',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+        });
+
+        const createIcon = (iconClass, bgColor) => {
+            return L.divIcon({
+                html: \`<div class="\${bgColor} text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white text-xs"><i class="\${iconClass}"></i></div>\`,
+                className: '',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
+                popupAnchor: [0, -14]
+            });
+        };
+
+        const icons = {
+            hotel: hotelIcon,
+            shop: createIcon('fas fa-shopping-basket', 'bg-blue-500'),
+            sightseeing: createIcon('fas fa-umbrella-beach', 'bg-green-500'),
+            gourmet: createIcon('fas fa-utensils', 'bg-orange-500')
+        };
+
+        const rawLocations = ${JSON.stringify(mapLocationsData)};
+        mapLocations = rawLocations.map(loc => ({
+            ...loc,
+            icon: icons[loc.category] || icons.shop
+        }));
+
+        updateMapMarkers('all');
+
+        window.addEventListener('resize', () => {
+            areaMap.invalidateSize();
+            if(markersLayer.getLayers().length > 0) {
+                areaMap.fitBounds(markersLayer.getBounds(), { padding: [30, 30] });
+            }
+        });
+    };
+
+    const updateMapMarkers = (category) => {
+        if (!markersLayer) return;
+        markersLayer.clearLayers();
+        let bounds = [];
+
+        mapLocations.forEach(loc => {
+            if (category === 'all' || loc.category === 'hotel' || loc.category === category) {
+                const marker = L.marker([loc.lat, loc.lng], { icon: loc.icon });
+                marker.bindPopup(loc.popup);
+                markersLayer.addLayer(marker);
+                bounds.push([loc.lat, loc.lng]);
+            }
+        });
+
+        if (bounds.length > 0) {
+            areaMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', initMap);
+
+    // AREA GUIDE タブ切り替えロジック
+    const tabBtns = document.querySelectorAll('.area-tab-btn');
+    const tabContents = document.querySelectorAll('.area-tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => {
+                b.classList.remove('bg-primary', 'text-white', 'border-primary');
+                b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-200');
+            });
+            btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-200');
+            btn.classList.add('bg-primary', 'text-white', 'border-primary');
+
+            const targetId = btn.getAttribute('data-target');
+            const category = btn.getAttribute('data-category');
+            
+            tabContents.forEach(content => {
+                if (content.id === targetId) {
+                    content.classList.remove('hidden');
+                    content.classList.add('animate-[pulse_0.3s_ease-in-out]');
+                } else {
+                    content.classList.add('hidden');
+                    content.classList.remove('animate-[pulse_0.3s_ease-in-out]');
+                }
+            });
+
+            if (areaMap) {
+                updateMapMarkers(category);
+            }
+        });
+    });
+
+    // Lightbox Functionality
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.getElementById('lightbox-close');
+    const lightboxTriggers = document.querySelectorAll('.lightbox-trigger');
+
+    const openLightbox = (src, alt) => {
+        lightboxImg.src = src;
+        lightboxCaption.textContent = alt;
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; 
+        
+        setTimeout(() => {
+            lightbox.classList.remove('opacity-0');
+            lightbox.classList.add('opacity-100');
+        }, 10);
+    };
+
+    const closeLightboxFn = () => {
+        lightbox.classList.remove('opacity-100');
+        lightbox.classList.add('opacity-0');
+        document.body.style.overflow = ''; 
+        
+        setTimeout(() => {
+            lightbox.classList.add('hidden');
+            lightboxImg.src = '';
+        }, 300);
+    };
+
+    lightboxTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            openLightbox(trigger.src, trigger.alt);
+        });
+    });
+
+    lightboxClose.addEventListener('click', closeLightboxFn);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightboxFn();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+            closeLightboxFn();
+        }
+    });
+
+    // Checklist Data and Rendering
+    const items = ${JSON.stringify(checklistForScript)};
+
+    const checklistContainer = document.getElementById('checklist-container');
+    const savedChecks = JSON.parse(localStorage.getItem(${JSON.stringify(m.storageKey || 'shioriChecklist')})) || {};
+
+    items.forEach((item, index) => {
+        const isChecked = savedChecks[index] || false;
+        const div = document.createElement('div');
+        div.className = \`flex items-center cursor-pointer group transition-all duration-200 select-none p-3 rounded-xl border \${isChecked ? 'bg-gray-50 border-gray-200 text-gray-400 line-through' : 'bg-white border-gray-100 shadow-sm text-textDark hover:border-primary/50 hover:shadow-md'}\`;
+        
+        div.innerHTML = \`
+            <i class="far \${isChecked ? 'fa-check-square text-primary' : 'fa-square text-gray-300 group-hover:text-primary'} text-2xl mr-3 transition-colors"></i>
+            <span class="font-medium text-base">\${item}</span>
+        \`;
+        
+        div.addEventListener('click', function() {
+            const isNowChecked = !this.classList.contains('line-through');
+            const icon = this.querySelector('i');
+            
+            if (isNowChecked) {
+                this.className = 'flex items-center cursor-pointer group transition-all duration-200 select-none p-3 rounded-xl border bg-gray-50 border-gray-200 text-gray-400 line-through';
+                icon.className = 'far fa-check-square text-primary text-2xl mr-3 transition-colors';
+            } else {
+                this.className = 'flex items-center cursor-pointer group transition-all duration-200 select-none p-3 rounded-xl border bg-white border-gray-100 shadow-sm text-textDark hover:border-primary/50 hover:shadow-md';
+                icon.className = 'far fa-square text-gray-300 group-hover:text-primary text-2xl mr-3 transition-colors';
+            }
+
+            savedChecks[index] = isNowChecked;
+            localStorage.setItem(${JSON.stringify(m.storageKey || 'shioriChecklist')}, JSON.stringify(savedChecks));
+        });
+        
+        checklistContainer.appendChild(div);
+    });
+<\/script>
+</body>
+</html>`;
+}
+
+/**
+ * プレビューiframeの更新（スクロール位置を維持しつつ再描画）
+ */
+function updatePreviewIframe() {
+    const iframe = document.getElementById('preview-iframe');
+    let savedScrollY = 0;
+    try {
+        if (iframe.contentWindow) {
+            savedScrollY = iframe.contentWindow.scrollY || 0;
+        }
+    } catch (e) {}
+
+    const htmlCode = generateShioriHTML(appData, true);
+    iframe.srcdoc = htmlCode;
+    iframe.onload = () => {
+        try {
+            if (savedScrollY > 0) {
+                iframe.contentWindow.scrollTo(0, savedScrollY);
+            }
+        } catch (e) {}
+    };
+}
+
+/**
+ * イベントリスナーの初期化
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // タブ切り替え
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            renderEditorTab(btn.dataset.tab);
+        });
+    });
+
+    // モバイル表示切り替え（編集 / プレビュー）
+    const mobileEditBtn = document.getElementById('mobile-view-edit');
+    const mobilePreviewBtn = document.getElementById('mobile-view-preview');
+    const editorPane = document.getElementById('editor-pane');
+    const previewPane = document.getElementById('preview-pane');
+
+    mobileEditBtn.addEventListener('click', () => {
+        editorPane.classList.remove('hidden');
+        previewPane.classList.add('hidden');
+        previewPane.classList.remove('flex');
+        mobileEditBtn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        mobileEditBtn.classList.remove('text-slate-600');
+        mobilePreviewBtn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+        mobilePreviewBtn.classList.add('text-slate-600');
+    });
+
+    mobilePreviewBtn.addEventListener('click', () => {
+        editorPane.classList.add('hidden');
+        previewPane.classList.remove('hidden');
+        previewPane.classList.add('flex');
+        mobilePreviewBtn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        mobilePreviewBtn.classList.remove('text-slate-600');
+        mobileEditBtn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+        mobileEditBtn.classList.add('text-slate-600');
+        updatePreviewIframe();
+    });
+
+    // プレビュー幅切り替え（PC / スマホ）
+    const btnDesktop = document.getElementById('preview-mode-desktop');
+    const btnMobile = document.getElementById('preview-mode-mobile');
+    const wrapper = document.getElementById('preview-frame-wrapper');
+
+    btnDesktop.addEventListener('click', () => {
+        wrapper.style.maxWidth = '100%';
+        btnDesktop.classList.add('bg-indigo-50', 'text-indigo-600');
+        btnDesktop.classList.remove('text-slate-500');
+        btnMobile.classList.remove('bg-indigo-50', 'text-indigo-600');
+        btnMobile.classList.add('text-slate-500');
+        setTimeout(() => {
+            const iframe = document.getElementById('preview-iframe');
+            if (iframe.contentWindow) iframe.contentWindow.dispatchEvent(new Event('resize'));
+        }, 320);
+    });
+
+    btnMobile.addEventListener('click', () => {
+        wrapper.style.maxWidth = '390px';
+        btnMobile.classList.add('bg-indigo-50', 'text-indigo-600');
+        btnMobile.classList.remove('text-slate-500');
+        btnDesktop.classList.remove('bg-indigo-50', 'text-indigo-600');
+        btnDesktop.classList.add('text-slate-500');
+        setTimeout(() => {
+            const iframe = document.getElementById('preview-iframe');
+            if (iframe.contentWindow) iframe.contentWindow.dispatchEvent(new Event('resize'));
+        }, 320);
+    });
+
+    document.getElementById('preview-refresh').addEventListener('click', () => {
+        updatePreviewIframe();
+        showToast('プレビューを再読み込みしました');
+    });
+
+    // HTML出力モーダル
+    const exportModal = document.getElementById('export-modal');
+    const codeArea = document.getElementById('generated-code-area');
+
+    document.getElementById('btn-export-html').addEventListener('click', () => {
+        codeArea.value = generateShioriHTML(appData, false);
+        exportModal.classList.remove('hidden');
+        exportModal.classList.add('flex');
+    });
+
+    document.getElementById('close-export-modal').addEventListener('click', () => {
+        exportModal.classList.add('hidden');
+        exportModal.classList.remove('flex');
+    });
+
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+        codeArea.select();
+        try {
+            document.execCommand('copy');
+            showToast('HTMLコードをクリップボードにコピーしました！');
+        } catch (err) {
+            showToast('コピーに失敗しました。手動で選択してコピーしてください。', true);
+        }
+    });
+
+    document.getElementById('btn-download-html').addEventListener('click', () => {
+        const blob = new Blob([codeArea.value], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('index.html をダウンロードしました！');
+    });
+
+    // JSONデータ保存・復元モーダル
+    const jsonModal = document.getElementById('json-modal');
+    const jsonArea = document.getElementById('json-data-area');
+
+    document.getElementById('btn-json-io').addEventListener('click', () => {
+        jsonArea.value = JSON.stringify(appData, null, 2);
+        jsonModal.classList.remove('hidden');
+        jsonModal.classList.add('flex');
+    });
+
+    document.getElementById('close-json-modal').addEventListener('click', () => {
+        jsonModal.classList.add('hidden');
+        jsonModal.classList.remove('flex');
+    });
+
+    document.getElementById('btn-copy-json').addEventListener('click', () => {
+        jsonArea.select();
+        document.execCommand('copy');
+        showToast('JSONデータをコピーしました');
+    });
+
+    document.getElementById('btn-download-json').addEventListener('click', () => {
+        const blob = new Blob([jsonArea.value], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'shiori_data.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('shiori_data.json を保存しました');
+    });
+
+    document.getElementById('input-upload-json').addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            jsonArea.value = ev.target.result;
+            showToast('JSONファイルを読み込みました。「反映する」を押してください');
+        };
+        reader.readAsText(file);
+    });
+
+    document.getElementById('btn-apply-json').addEventListener('click', () => {
+        try {
+            const parsed = JSON.parse(jsonArea.value);
+            if (!parsed.meta || !parsed.plan || !parsed.schedule) {
+                throw new Error('Invalid structure');
+            }
+            appData = normalizeShioriData(parsed);
+            saveDraftAndRefreshPreview(true);
+            renderEditorTab(currentTab);
+            jsonModal.classList.add('hidden');
+            jsonModal.classList.remove('flex');
+            showToast('編集データを復元しました！');
+        } catch (err) {
+            showToast('JSONの形式が正しくありません', true);
+        }
+    });
+
+    // サンプルデータ読込ボタン
+    document.getElementById('btn-load-sample').addEventListener('click', loadSampleDataWithConfirm);
+
+    // 説明書モーダル
+    const helpModal = document.getElementById('help-modal');
+    const openHelp = () => {
+        helpModal.classList.remove('hidden');
+        helpModal.classList.add('flex');
+    };
+    const closeHelp = () => {
+        helpModal.classList.add('hidden');
+        helpModal.classList.remove('flex');
+    };
+    document.getElementById('btn-help').addEventListener('click', openHelp);
+    document.getElementById('close-help-modal').addEventListener('click', closeHelp);
+    document.getElementById('btn-help-ok').addEventListener('click', closeHelp);
+    helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) closeHelp();
+    });
+
+    // 新規白紙（初期状態）に戻すボタン
+    document.getElementById('btn-reset').addEventListener('click', () => {
+        showCustomConfirm(
+            '新規白紙（初期状態）に戻す',
+            'これまでの入力内容がクリアされ、入力ガイド付きの白紙テンプレートに戻ります。よろしいですか？',
+            () => {
+                appData = normalizeShioriData(EMPTY_SHIORI_DATA);
+                localStorage.removeItem('shioriGeneratorDraft_v2');
+                renderEditorTab(currentTab);
+                updatePreviewIframe();
+                showToast('新規白紙状態に戻しました');
+            }
+        );
+    });
+
+    // 初期描画
+    renderEditorTab('basic');
+    updatePreviewIframe();
+});
+</script>
+</body>
+</html>
