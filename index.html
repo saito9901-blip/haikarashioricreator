@@ -50,14 +50,14 @@
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
     <!-- トップヘッダー -->
-    <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 flex items-center justify-between flex-shrink-0 z-30 shadow-sm">
+    <header class="bg-white border-b border-slate-200 px-3 sm:px-5 py-2.5 flex items-center justify-between flex-shrink-0 z-30 shadow-sm">
         <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                 <i class="fas fa-book-open text-base"></i>
             </div>
             <div>
                 <h1 class="font-bold text-sm sm:text-base text-slate-800 leading-tight">旅のしおり Webページ作成ツール</h1>
-                <p class="text-[11px] text-slate-500 hidden sm:block">文字・写真を編集して、そのまま公開できるHTMLコードを生成します</p>
+                <p class="text-[11px] text-slate-500 hidden sm:block">GoogleマップURL対応・Googleサイト埋め込みコードもワンクリック生成</p>
             </div>
         </div>
 
@@ -73,25 +73,30 @@
 
         <!-- アクションボタン群 -->
         <div class="flex items-center gap-1.5 sm:gap-2">
-            <button id="btn-help" title="ツールの使い方・説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
+            <button id="btn-help" title="ツールの使い方・Googleサイト公開説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
                 <i class="fas fa-question-circle text-indigo-500"></i>
                 <span class="hidden md:inline">説明書</span>
             </button>
             <button id="btn-load-sample" title="夏合宿のしおりサンプルを読み込む" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold transition flex items-center gap-1.5">
                 <i class="fas fa-magic text-amber-500"></i>
-                <span class="hidden sm:inline">サンプル読込</span>
+                <span class="hidden xl:inline">サンプル読込</span>
             </button>
             <button id="btn-reset" title="白紙（初期状態）に戻す" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-red-600 text-xs font-medium transition flex items-center gap-1.5">
                 <i class="fas fa-file-alt"></i>
-                <span class="hidden md:inline">新規白紙</span>
+                <span class="hidden xl:inline">新規白紙</span>
             </button>
             <button id="btn-json-io" title="編集データの保存・読込" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5">
-                <i class="fas fa-file-code"></i>
-                <span class="hidden xl:inline">データ保存/読込</span>
+                <i class="fas fa-database"></i>
+                <span class="hidden xl:inline">保存/読込</span>
             </button>
-            <button id="btn-export-html" class="px-3.5 py-2 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+            <button id="btn-export-gsites" title="Googleサイト埋め込み用コードを生成" class="px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fab fa-google"></i>
+                <span class="hidden sm:inline">Googleサイト出力</span>
+                <span class="sm:hidden">Gサイト</span>
+            </button>
+            <button id="btn-export-html" title="単体HTMLファイルを出力" class="px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
                 <i class="fas fa-code"></i>
-                <span>HTML出力</span>
+                <span class="hidden sm:inline">HTML出力</span>
             </button>
         </div>
     </header>
@@ -100,7 +105,7 @@
     <div class="flex-1 flex overflow-hidden relative">
 
         <!-- 左側：編集パネル -->
-        <aside id="editor-pane" class="w-full lg:w-[460px] xl:w-[500px] bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 z-20">
+        <aside id="editor-pane" class="w-full lg:w-[465px] xl:w-[510px] bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 z-20">
             <!-- セクションナビゲーションタブ -->
             <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex gap-1.5 overflow-x-auto flex-shrink-0">
                 <button class="tab-btn active px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5" data-tab="basic">
@@ -162,26 +167,57 @@
         </main>
     </div>
 
-    <!-- HTMLコード出力モーダル -->
+    <!-- コード出力モーダル（Googleサイト出力 & 単体HTML出力 統合） -->
     <div id="export-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
-        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                <div>
-                    <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                        <i class="fas fa-code text-indigo-600"></i>生成されたHTMLコード
-                    </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">この1ファイルだけで、デザイン・地図・チェックリストすべてが動作します。</p>
+                <div class="flex items-center gap-3">
+                    <div id="export-modal-icon" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+                        <i class="fab fa-google text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 id="export-modal-title" class="font-bold text-lg text-slate-800">Googleサイト埋め込み用コード出力</h2>
+                        <p id="export-modal-subtitle" class="text-xs text-slate-500 mt-0.5">Googleサイトの「埋め込みコード」に貼り付けて部員に共有できます</p>
+                    </div>
                 </div>
                 <button id="close-export-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+
+            <!-- 出力形式切り替えタブ -->
+            <div class="px-6 pt-3 bg-slate-50 border-b border-slate-200 flex gap-2">
+                <button id="tab-export-gsites" class="px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-blue-600 text-blue-700 bg-white flex items-center gap-1.5 transition">
+                    <i class="fab fa-google"></i>Googleサイト埋め込み用（推奨・部員共有向け）
+                </button>
+                <button id="tab-export-html" class="px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition">
+                    <i class="fas fa-file-code"></i>単体HTMLファイル (index.html)
+                </button>
+            </div>
             
-            <div class="p-4 sm:p-6 flex-1 overflow-hidden flex flex-col gap-4">
-                <div class="flex flex-wrap items-center justify-between gap-2 bg-indigo-50/70 p-3 rounded-2xl border border-indigo-100">
-                    <div class="text-xs text-indigo-900">
+            <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
+                <!-- Googleサイト用ガイドバナー -->
+                <div id="guide-export-gsites" class="bg-blue-50/80 p-4 rounded-2xl border border-blue-200 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                            <i class="fas fa-share-alt text-blue-600"></i>Googleサイトで表示して部員に流す手順
+                        </span>
+                        <button id="btn-copy-gsites-code" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <i class="far fa-copy"></i>Googleサイト用コードをコピー
+                        </button>
+                    </div>
+                    <ol class="text-xs text-blue-900/90 space-y-1 list-decimal list-inside leading-relaxed">
+                        <li>上の<strong>「Googleサイト用コードをコピー」</strong>を押します（Googleサイトのiframe内で崩れず、外部マップも別タブで開く専用仕様です）。</li>
+                        <li><a href="https://sites.google.com/" target="_blank" rel="noopener noreferrer" class="underline font-bold text-blue-700 hover:text-blue-900">Googleサイト</a>を開き、右側メニューの<strong>「挿入」＞「埋め込み」＞「埋め込みコード」</strong>を選択して貼り付けます。</li>
+                        <li>挿入されたプレビュー枠の端をドラッグして<strong>横幅いっぱい・縦長</strong>に広げ、右上の<strong>「公開」</strong>を押してURLを部員に共有してください。</li>
+                    </ol>
+                </div>
+
+                <!-- 単体HTML用ガイドバナー -->
+                <div id="guide-export-html" class="hidden bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 flex flex-wrap items-center justify-between gap-2">
+                    <div class="text-xs text-indigo-900 max-w-xl leading-relaxed">
                         <i class="fas fa-info-circle mr-1 text-indigo-600"></i>
-                        画像をファイルアップロードした場合はHTML内に直接埋め込まれます。ファイル名指定（例: <code class="bg-white px-1.5 py-0.5 rounded">image.jpg</code>）の場合は同じフォルダに画像を配置してください。
+                        この1ファイルだけでデザイン・地図・チェックリストすべてが動作します。サーバーへのアップロードやLINEでの直接配布に便利です。
                     </div>
                     <div class="flex items-center gap-2">
                         <button id="btn-copy-code" class="px-4 py-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
@@ -193,7 +229,7 @@
                     </div>
                 </div>
 
-                <textarea id="generated-code-area" readonly class="w-full flex-1 font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
+                <textarea id="generated-code-area" readonly class="w-full flex-1 min-h-[260px] font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
             </div>
         </div>
     </div>
@@ -210,7 +246,7 @@
                 </button>
             </div>
             <div class="p-5 flex-1 overflow-y-auto space-y-4">
-                <p class="text-xs text-slate-600">現在の編集内容をJSONデータとして保存したり、以前保存したJSONデータを貼り付けて復元したりできます。</p>
+                <p class="text-xs text-slate-600">現在の編集内容をJSONデータとして保存したり、以前保存したJSONデータを貼り付けて復元したりできます。次回の合宿で使い回す際にも便利です。</p>
                 <div class="flex flex-wrap gap-2">
                     <button id="btn-copy-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
                         <i class="far fa-copy mr-1"></i>JSONをコピー
@@ -255,7 +291,7 @@
                     </div>
                     <div>
                         <h2 class="font-bold text-lg text-slate-800">旅のしおり Webページ作成ツール 説明書</h2>
-                        <p class="text-xs text-slate-500">基本的な使い方から公開・共有方法までのガイド</p>
+                        <p class="text-xs text-slate-500">GoogleマップURL自動連携・Googleサイト公開までの運用ガイド</p>
                     </div>
                 </div>
                 <button id="close-help-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
@@ -269,7 +305,7 @@
                         <i class="fas fa-sparkles"></i>1. このツールについて
                     </h3>
                     <p class="text-xs sm:text-sm text-slate-600">
-                        合宿や旅行の「Webしおり」を、HTMLやプログラミングの知識なしで作成できるツールです。左側のフォームに文字や写真を入れるだけで右側にリアルタイムでプレビューが表示され、最後に<strong>1つのHTMLファイル（index.html）</strong>として出力できます。
+                        合宿や遠征・旅行の「Webしおり」を、プログラミング知識なしで作成できるツールです。左側のフォームに入力するだけで右側にプレビューが反映され、<strong>Googleサイト（Google Sites）にそのまま埋め込んで部員に共有できる専用コード</strong>や、単体HTMLファイルを出力できます。
                     </p>
                 </section>
 
@@ -279,47 +315,64 @@
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：入力またはサンプル読込</span>
-                            <p class="text-xs text-slate-600">各入力欄の薄い文字（例）を参考に文字を入力します。完成イメージを先に見たい場合は、上部ヘッダーの<strong>「サンプル読込」</strong>を押すと「HAIKARA 夏合宿のしおり」の例が読み込まれます。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：基本情報・写真を入力</span>
+                            <p class="text-xs text-slate-600">表紙や宿泊先を入力します。<strong>注意事項（CAUTION）と持ち物リストは初期状態から定番の例が入っている</strong>ため、合宿に合わせて不要なものを消したり追記したりするだけで完成します。</p>
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 2：写真のドラッグ＆ドロップ</span>
-                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>（または「写真を選択」）すると自動リサイズされてHTMLに埋め込まれます。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-xs mb-1">STEP 2：GoogleマップURLを貼るだけ</span>
+                            <p class="text-xs text-slate-600">PLAN（宿泊先）やAREA（周辺スポット）の地図設定は、<strong>GoogleマップのURLをコピーして貼り付けるだけ</strong>で緯度・経度と地図ピン、経路案内リンクが自動設定されます。</p>
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 3：日程・スポット・持ち物の調整</span>
-                            <p class="text-xs text-slate-600">上部のタブを切り替えて、1日目・2日目・3日目のスケジュール追加、周辺スポットのピン位置調整、持ち物リストの追加・削除を行います。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 3：写真のドラッグ＆ドロップ</span>
+                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>すると自動リサイズされて埋め込まれます（Googleサイト上でもそのまま表示されます）。</p>
                         </div>
                         <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 4：HTML出力とメンバーへの共有</span>
-                            <p class="text-xs text-slate-600">右上の<strong>「HTML出力」</strong>から <code>index.html</code> をダウンロードします。LINE等でファイルを直接送るか、Webサーバー・GitHub Pages等にアップロードしてURLを共有します。</p>
+                            <span class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold text-xs mb-1">STEP 4：Googleサイトで公開・部員へ共有</span>
+                            <p class="text-xs text-slate-600">右上の<strong>「Googleサイト出力」</strong>からコードをコピーし、Googleサイトの「埋め込みコード」に貼り付けて公開すれば、部員にURLを流すだけでスマホから閲覧・チェックリスト利用ができます。</p>
                         </div>
                     </div>
                 </section>
 
-                <section class="space-y-2.5">
-                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
-                        <i class="fas fa-layer-group"></i>3. 各編集タブの機能ガイド
+                <!-- Googleサイト運用専用ガイド -->
+                <section class="bg-blue-50/80 p-4 sm:p-5 rounded-2xl border border-blue-200 space-y-2.5">
+                    <h3 class="font-bold text-base text-blue-900 flex items-center gap-2">
+                        <i class="fab fa-google text-blue-600"></i>3. Googleサイトにエクスポートして部員に流す方法
                     </h3>
-                    <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
-                        <li><strong class="text-slate-800">・基本・表紙：</strong> タイトル、日程、行き先、表紙の背景写真、全体のテーマカラー3色、フッター文言を設定します。</li>
-                        <li><strong class="text-slate-800">・PLAN：</strong> 宿泊先の名前・住所・Googleマップ検索ワード・アクセス方法、初日の集合時間や集合場所を設定します。</li>
-                        <li><strong class="text-slate-800">・FACILITY：</strong> 館内間取り図や客室写真、共有設備ギャラリー（カードの追加・削除可）、アメニティ一覧、注意事項を編集します。</li>
-                        <li><strong class="text-slate-800">・SCHEDULE：</strong> <strong>「＋ 日程を追加」</strong>で1日目だけでなく2日目・3日目以降のタイムラインも自由に作成できます。また、2日目・3日目を「タップして確認」の折りたたみ案内ボックスにする切り替えも可能です。</li>
-                        <li><strong class="text-slate-800">・CAUTION：</strong> 時間厳守や貴重品管理などの注意事項カードを色・アイコン付きで追加・削除できます。</li>
-                        <li><strong class="text-slate-800">・AREA：</strong> 周辺マップ（OpenStreetMap）に表示するピンと、カテゴリ別（買物・観光・グルメ）のスポットカードを編集できます。</li>
-                        <li><strong class="text-slate-800">・持ち物：</strong> 閲覧者がスマホでタップしてチェックを付けられる持ち物リスト（チェック状態は閲覧者のブラウザに自動保存されます）を編集します。</li>
-                    </ul>
+                    <ol class="text-xs sm:text-sm text-blue-950 space-y-2 list-decimal list-inside leading-relaxed">
+                        <li>ツール右上の青い<strong>「Googleサイト出力」</strong>ボタンをクリックし、<strong>「Googleサイト用コードをコピー」</strong>を押します。</li>
+                        <li><strong>Googleサイト（sites.google.com）</strong>を開き、部員共有用のページを作成します。</li>
+                        <li>画面右側のメニューから<strong>「挿入」＞「埋め込み」＞「埋め込みコード」</strong>タブを開き、コピーしたコードを貼り付けて「次へ」＞「挿入」をクリックします。</li>
+                        <li>ページ上に表示された埋め込み枠の左右・下のハンドルをドラッグし、<strong>画面幅いっぱい・縦に十分長く</strong>広げます（スクロールバーが出ないくらい縦に伸ばすとスマホでも非常に見やすくなります）。</li>
+                        <li>右上の<strong>「公開」</strong>ボタンを押してWebアドレスを設定し、そのURLを部員グループ（LINE・Discord・Slackなど）に共有します。</li>
+                    </ol>
+                    <p class="text-[11px] text-blue-800 bg-white/80 p-2.5 rounded-xl border border-blue-100">
+                        <i class="fas fa-check-circle text-blue-600 mr-1"></i>
+                        <strong>Googleサイト専用最適化：</strong>「Googleサイト出力」で生成されるコードは、Googleサイトの埋め込み枠内でもレイアウトが崩れず、Googleマップの経路案内や公式サイトリンクもブロックされずに新しいタブで開くよう自動調整されています。
+                    </p>
                 </section>
 
-                <section class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-1.5">
-                    <h3 class="font-bold text-sm text-amber-900 flex items-center gap-2">
-                        <i class="fas fa-lightbulb text-amber-500"></i>4. 便利なヒント・データ保存について
+                <section class="space-y-2">
+                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
+                        <i class="fas fa-map-pin"></i>4. GoogleマップURLの貼り付けコツ
                     </h3>
-                    <p class="text-xs text-amber-800">
-                        ・編集内容はブラウザに自動保存されますが、別のパソコンで続きを編集したい場合やバックアップを残したい場合は、ヘッダーの<strong>「データ保存/読込」</strong>からJSONファイルとして保存・復元できます。<br>
-                        ・スマホでの見え方は、プレビュー上部にある<strong>「スマホ幅」</strong>ボタンからいつでも確認できます。
+                    <p class="text-xs sm:text-sm text-slate-600">
+                        パソコンのブラウザでGoogleマップを開き、目的地（宿泊先やコンビニ・観光地）をクリックした状態で<strong>アドレスバーの長いURL（例：<code>https://www.google.com/maps/place/.../@34.75,139.00...</code>）</strong>をコピーして貼り付けると、ピンの座標まで100%自動で読み取ります。スマホの「共有」からコピーした短縮URL（<code>https://maps.app.goo.gl/...</code>）も経路リンクとしてそのまま利用できます。
                     </p>
+                </section>
+
+                <section class="space-y-2.5">
+                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
+                        <i class="fas fa-layer-group"></i>5. 各編集タブの機能一覧
+                    </h3>
+                    <ul class="space-y-1.5 text-xs sm:text-sm text-slate-600">
+                        <li><strong class="text-slate-800">・基本・表紙：</strong> タイトル、日程、行き先、表紙の背景写真、テーマカラー3色、フッター文言を設定します。</li>
+                        <li><strong class="text-slate-800">・PLAN：</strong> 宿泊先の名前・住所・<strong>GoogleマップURL</strong>・アクセス方法・集合場所を設定します。</li>
+                        <li><strong class="text-slate-800">・FACILITY：</strong> 館内間取り図・客室写真・共有設備ギャラリー・アメニティ一覧を編集します。</li>
+                        <li><strong class="text-slate-800">・SCHEDULE：</strong> <strong>「＋ 日程を追加」</strong>で1日目・2日目・3日目以降のタイムラインを作成できます。</li>
+                        <li><strong class="text-slate-800">・CAUTION：</strong> 時間厳守や貴重品管理などの注意事項カードを編集します（初期状態で定番例が入っています）。</li>
+                        <li><strong class="text-slate-800">・AREA：</strong> 周辺マップ（OpenStreetMap）のピンとスポットカードを<strong>GoogleマップURLを貼るだけ</strong>で追加・編集できます。</li>
+                        <li><strong class="text-slate-800">・持ち物：</strong> 部員がスマホでタップしてチェックできる持ち物リストを編集します（初期状態で定番例が入っています）。</li>
+                    </ul>
                 </section>
             </div>
 
@@ -339,7 +392,110 @@
 
 <script>
 /**
- * 初期画面用の空テンプレートデータ（入力欄の背景に例・ガイドを表示）
+ * GoogleマップURL解析ヘルパー
+ * ブラウザURL・共有URL・座標・施設名のいずれを入れても座標や検索クエリを自動抽出する
+ */
+function parseGoogleMapsInput(rawInput) {
+    const input = (rawInput || '').trim();
+    if (!input) {
+        return { lat: null, lng: null, query: '', originalUrl: '', isShortUrl: false, status: 'empty' };
+    }
+
+    const isUrl = /^https?:\/\//i.test(input);
+    const isShortUrl = /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(input);
+
+    let lat = null;
+    let lng = null;
+    let extractedPlaceName = '';
+
+    // 1. 最優先: !3d(緯度)!4d(経度) パターン（Googleマップのピンそのものの精密座標）
+    const pinMatch = input.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    if (pinMatch) {
+        lat = parseFloat(pinMatch[1]);
+        lng = parseFloat(pinMatch[2]);
+    }
+
+    // 2. 次点: @(緯度),(経度) パターン（ビューポート中心座標）
+    if (lat === null || lng === null) {
+        const atMatch = input.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (atMatch) {
+            lat = parseFloat(atMatch[1]);
+            lng = parseFloat(atMatch[2]);
+        }
+    }
+
+    // 3. クエリパラメータ ?q=lat,lng または ll=lat,lng パターン
+    if (lat === null || lng === null) {
+        const qCoordMatch = input.match(/[?&](?:q|ll|query)=(-?\d+\.\d+)(?:%2C|,)(-?\d+\.\d+)/i);
+        if (qCoordMatch) {
+            lat = parseFloat(qCoordMatch[1]);
+            lng = parseFloat(qCoordMatch[2]);
+        }
+    }
+
+    // 4. 直接 "34.75405, 139.00159" と入力された場合
+    if (!isUrl && lat === null) {
+        const directCoordMatch = input.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
+        if (directCoordMatch) {
+            lat = parseFloat(directCoordMatch[1]);
+            lng = parseFloat(directCoordMatch[2]);
+        }
+    }
+
+    // 5. URL内の /place/施設名/ または ?q=施設名 から検索用テキストを抽出
+    if (isUrl) {
+        const placeMatch = input.match(/\/maps\/place\/([^\/?@#]+)/);
+        if (placeMatch && placeMatch[1]) {
+            try {
+                extractedPlaceName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
+            } catch (e) {
+                extractedPlaceName = placeMatch[1];
+            }
+        } else {
+            const qTextMatch = input.match(/[?&](?:q|query)=([^&]+)/i);
+            if (qTextMatch && qTextMatch[1]) {
+                try {
+                    extractedPlaceName = decodeURIComponent(qTextMatch[1].replace(/\+/g, ' '));
+                } catch (e) {
+                    extractedPlaceName = qTextMatch[1];
+                }
+            }
+        }
+    }
+
+    let query = '';
+    if (extractedPlaceName) {
+        query = extractedPlaceName;
+    } else if (lat !== null && lng !== null) {
+        query = `${lat},${lng}`;
+    } else if (!isUrl) {
+        query = input;
+    }
+
+    let status = 'text';
+    if (lat !== null && lng !== null) {
+        status = 'coords_ok';
+    } else if (isShortUrl) {
+        status = 'short_url';
+    } else if (isUrl && extractedPlaceName) {
+        status = 'place_name_ok';
+    } else if (isUrl) {
+        status = 'url_only';
+    }
+
+    return {
+        lat,
+        lng,
+        query,
+        originalUrl: isUrl ? input : '',
+        isShortUrl,
+        status
+    };
+}
+
+/**
+ * 初期画面用のテンプレートデータ
+ * 注意事項と持ち物は初期状態でも実用的な例を読み込んだ状態にする
  */
 const EMPTY_SHIORI_DATA = {
     meta: {
@@ -364,6 +520,7 @@ const EMPTY_SHIORI_DATA = {
         durationBadge: "",
         hotelImage: "",
         postalAndAddress: "",
+        mapUrl: "",
         mapQuery: "",
         accessLines: [
             { icon: "fas fa-train", text: "" }
@@ -426,10 +583,31 @@ const EMPTY_SHIORI_DATA = {
     },
     cautions: [
         {
-            title: "",
-            desc: "",
+            title: "時間を厳守",
+            desc: "集合時間や出発時間を守って行動しましょう。遅れそうな場合はすぐに役員・幹事へ連絡をしてください。",
             color: "red",
             icon: "fas fa-clock",
+            fullWidth: false
+        },
+        {
+            title: "貴重品の管理",
+            desc: "財布やスマホなどの貴重品は肌身離さず、自己責任でしっかりと管理しましょう。",
+            color: "yellow",
+            icon: "fas fa-wallet",
+            fullWidth: false
+        },
+        {
+            title: "マナーを守る",
+            desc: "深夜の大声・騒音は禁止です。周りの宿泊客や近隣の方の迷惑にならないよう配慮ある行動をしましょう。",
+            color: "blue",
+            icon: "fas fa-volume-mute",
+            fullWidth: false
+        },
+        {
+            title: "体調管理・安全第一",
+            desc: "無理のない範囲で行動し、体調が悪くなった場合はすぐに役員や仲間に伝えてください。",
+            color: "green",
+            icon: "fas fa-heartbeat",
             fullWidth: false
         }
     ],
@@ -449,6 +627,7 @@ const EMPTY_SHIORI_DATA = {
                 address: "",
                 accessShort: "",
                 accessDetail: "",
+                mapUrl: "",
                 mapQuery: "",
                 lat: 35.683,
                 lng: 139.769,
@@ -457,7 +636,11 @@ const EMPTY_SHIORI_DATA = {
         ]
     },
     checklist: [
-        ""
+        "財布", "携帯電話", "充電器", "現金", "交通ICカード",
+        "学生証", "身分証明書", "散策用バッグ", "折り畳み傘", "防寒具",
+        "バスタオル・タオル", "履き馴れた靴", "予備の靴下", "パジャマ", "ハンカチ",
+        "ティッシュ", "歯磨きセット", "免許証",
+        "みんなで遊べるもの", "ドライヤー (推奨)"
     ]
 };
 
@@ -473,7 +656,7 @@ const SAMPLE_SHIORI_DATA = {
         heroOrg: "HAIKARA 2026",
         heroDate: "2026.09.06 - 09.08",
         heroLocation: "伊豆・下田方面",
-        heroImage: "image.jpg",
+        heroImage: "https://saito9901-blip.github.io/haikarasummer2026/image.jpg",
         primaryColor: "#b4a6d4",
         secondaryColor: "#e5c1a3",
         bgColor: "#faf9f7",
@@ -485,8 +668,9 @@ const SAMPLE_SHIORI_DATA = {
     plan: {
         hotelName: "サンライズガーデン",
         durationBadge: "2泊3日",
-        hotelImage: "image.jpg",
+        hotelImage: "https://saito9901-blip.github.io/haikarasummer2026/image.jpg",
         postalAndAddress: "〒413-0503 静岡県賀茂郡河津町見高109-6",
+        mapUrl: "https://www.google.com/maps/place/%E9%9D%99%E5%B2%A1%E7%9C%8C%E8%B3%80%E8%8C%82%E9%83%A1%E6%B2%B3%E6%B4%A5%E7%94%BA%E8%A6%8B%E9%AB%98109-6/@34.75405,139.00159,16z",
         mapQuery: "静岡県賀茂郡河津町見高109-6",
         accessLines: [
             { icon: "fas fa-train", text: "今井浜海岸駅から徒歩7分" },
@@ -502,41 +686,41 @@ const SAMPLE_SHIORI_DATA = {
     facility: {
         introText: "合宿を最高に盛り上げる、充実の設備をご紹介します。画像はタップで拡大できます。",
         floorPlanTitle: "館内マップ・間取り",
-        floorPlanImage: "277516_0.jpg",
+        floorPlanImage: "https://saito9901-blip.github.io/haikarasummer2026/277516_0.jpg",
         floorPlanDesc: "1Fは食堂やBBQなどの共有スペース、2F・3Fは客室と大広間などのくつろぎエリアになっています。",
         roomTitle: "ゆったりくつろげる客室",
-        roomImage: "image (1).jpg",
+        roomImage: "https://saito9901-blip.github.io/haikarasummer2026/image%20(1).jpg",
         roomDesc: "木の温もりを感じる開放的な客室。全客室にバス・トイレ・洗面台が完備されています。",
         sharedFacilities: [
             {
                 title: "オーシャンビュー露天風呂",
                 desc: "潮風を感じながらリラックス。（※23時まで）",
-                image: "277514_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277514_0.jpg"
             },
             {
                 title: "広々とした大浴場",
                 desc: "大人数でも安心の洗い場完備。（※23時まで）",
-                image: "277511_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277511_0.jpg"
             },
             {
                 title: "プレイルーム",
                 desc: "卓球やビリヤードで白熱バトル！",
-                image: "277494_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277494_0.jpg"
             },
             {
                 title: "全天候型BBQスペース",
                 desc: "屋根付きで雨の日でも安心。",
-                image: "277518_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277518_0.jpg"
             },
             {
                 title: "光が差し込む大食堂",
                 desc: "全員で楽しく食事ができます。",
-                image: "277498_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277498_0.jpg"
             },
             {
                 title: "カラオケ完備のラウンジ",
                 desc: "ふかふかソファで歌って語り合おう！",
-                image: "277517_0.jpg"
+                image: "https://saito9901-blip.github.io/haikarasummer2026/277517_0.jpg"
             }
         ],
         amenityCategories: [
@@ -695,6 +879,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町浜155-2",
                 accessShort: "車約3分/徒歩約22分",
                 accessDetail: "車 約3分 / 徒歩 約22分",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E3%82%BB%E3%83%96%E3%83%B3%E3%82%A4%E3%83%AC%E3%83%96%E3%83%B3%E4%BC%8A%E8%B1%86%E6%B2%B3%E6%B4%A5%E9%A7%85%E5%89%8D%E5%BA%97",
                 mapQuery: "セブンイレブン伊豆河津駅前店",
                 lat: 34.7485,
                 lng: 138.9918,
@@ -710,6 +895,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町浜142-1",
                 accessShort: "車約5分",
                 accessDetail: "車 約5分 / 河津駅近く",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%81%82%E3%81%8A%E3%81%8D%E6%B2%B3%E6%B4%A5%E5%BA%97",
                 mapQuery: "スーパーあおき河津店",
                 lat: 34.7490,
                 lng: 138.9915,
@@ -725,6 +911,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町笹原356-1",
                 accessShort: "車約5分",
                 accessDetail: "車 約5分 / 河津駅近く",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E3%83%9E%E3%83%83%E3%82%AF%E3%82%B9%E3%83%90%E3%83%AA%E3%83%A5%E6%B2%B3%E6%B4%A5%E5%BA%97",
                 mapQuery: "マックスバリュ河津店",
                 lat: 34.7495,
                 lng: 138.9920,
@@ -740,6 +927,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町浜164-1",
                 accessShort: "車約5分",
                 accessDetail: "車 約5分 / 河津駅近く",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%82%B3%E3%82%AB%E3%83%A9%E3%83%95%E3%82%A1%E3%82%A4%E3%83%B3%E6%B2%B3%E6%B4%A5%E5%BA%97",
                 mapQuery: "ココカラファイン河津店",
                 lat: 34.7485,
                 lng: 138.9930,
@@ -755,6 +943,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町見高",
                 accessShort: "徒歩約7分",
                 accessDetail: "徒歩 約7分",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E4%BB%8A%E4%BA%95%E6%B5%9C%E6%B5%B7%E6%B0%B4%E6%B5%B4%E5%A0%B4",
                 mapQuery: "今井浜海水浴場",
                 lat: 34.7430,
                 lng: 138.9955,
@@ -770,6 +959,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町浜406-2",
                 accessShort: "車約10分",
                 accessDetail: "車 約10分",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=iZoo",
                 mapQuery: "iZoo",
                 lat: 34.7214,
                 lng: 138.9722,
@@ -785,6 +975,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町梨本",
                 accessShort: "車約20分",
                 accessDetail: "車 約20分 / 河津駅からバス",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E6%B2%B3%E6%B4%A5%E4%B8%83%E6%BB%9D",
                 mapQuery: "河津七滝",
                 lat: 34.7941,
                 lng: 138.9304,
@@ -800,6 +991,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県下田市3-22-31",
                 accessShort: "車約25分",
                 accessDetail: "車 約25分 / 伊豆急下田駅方面",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E4%B8%8B%E7%94%B0%E6%B5%B7%E4%B8%AD%E6%B0%B4%E6%97%8F%E9%A4%A8",
                 mapQuery: "下田海中水族館",
                 lat: 34.6644,
                 lng: 138.9461,
@@ -815,6 +1007,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町梨本371-1",
                 accessShort: "車約20分",
                 accessDetail: "車 約20分",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E3%82%8F%E3%81%95%E3%81%B3%E5%9C%92%E3%81%8B%E3%81%A9%E3%82%84",
                 mapQuery: "わさび園かどや",
                 lat: 34.7935,
                 lng: 138.9328,
@@ -830,6 +1023,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町浜142-2",
                 accessShort: "車約5分",
                 accessDetail: "車 約5分 / 河津駅前",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E8%B1%86%E6%B5%B7%E9%AE%AE%E3%81%A9%E3%82%93%E3%81%B6%E3%82%8A%E3%82%84+%E6%B2%B3%E6%B4%A5",
                 mapQuery: "伊豆海鮮どんぶりや 河津",
                 lat: 34.7475,
                 lng: 138.9940,
@@ -845,6 +1039,7 @@ const SAMPLE_SHIORI_DATA = {
                 address: "静岡県賀茂郡河津町峰457-1",
                 accessShort: "車約10分",
                 accessDetail: "車 約10分",
+                mapUrl: "https://www.google.com/maps/search/?api=1&query=%E8%B8%8A%E3%82%8A%E5%AD%90%E6%B8%A9%E6%B3%89%E4%BC%9A%E9%A4%A8",
                 mapQuery: "踊り子温泉会館",
                 lat: 34.7571,
                 lng: 138.9839,
@@ -861,7 +1056,7 @@ const SAMPLE_SHIORI_DATA = {
     ]
 };
 
-// データ構造の互換マイグレーション（旧形式のscheduleにも対応）
+// データ構造の互換マイグレーション
 function normalizeShioriData(raw) {
     const data = JSON.parse(JSON.stringify(raw));
     if (data.schedule && !Array.isArray(data.schedule.days)) {
@@ -879,17 +1074,28 @@ function normalizeShioriData(raw) {
             otherDaysDesc: data.schedule.otherDaysDesc || ""
         };
     }
+    if (data.plan && data.plan.mapUrl === undefined) {
+        data.plan.mapUrl = data.plan.mapQuery || "";
+    }
+    if (data.areaGuide && Array.isArray(data.areaGuide.spots)) {
+        data.areaGuide.spots.forEach(sp => {
+            if (sp.mapUrl === undefined) {
+                sp.mapUrl = sp.mapQuery || "";
+            }
+        });
+    }
     return data;
 }
 
-// アプリケーション状態（初期画面は空＋入力ガイド表示）
+// アプリケーション状態（初期画面でも注意事項と持ち物はサンプル入り）
 let appData = normalizeShioriData(EMPTY_SHIORI_DATA);
 let currentTab = 'basic';
 let previewUpdateTimer = null;
+let currentExportMode = 'gsites'; // 'gsites' | 'html'
 
 // ローカルストレージから前回の編集状態を復元
 try {
-    const saved = localStorage.getItem('shioriGeneratorDraft_v2');
+    const saved = localStorage.getItem('shioriGeneratorDraft_v4');
     if (saved) {
         appData = normalizeShioriData(JSON.parse(saved));
     }
@@ -953,7 +1159,7 @@ function showCustomConfirm(title, message, onConfirm) {
 
 function saveDraftAndRefreshPreview(immediate = false) {
     try {
-        localStorage.setItem('shioriGeneratorDraft_v2', JSON.stringify(appData));
+        localStorage.setItem('shioriGeneratorDraft_v4', JSON.stringify(appData));
     } catch (e) {
         // 画像サイズが大きすぎる場合など
     }
@@ -966,12 +1172,72 @@ function saveDraftAndRefreshPreview(immediate = false) {
 }
 
 /**
+ * GoogleマップURL入力時の自動解析＆ステータス更新ハンドラ
+ */
+function handlePlanMapUrlInput(val) {
+    appData.plan.mapUrl = val;
+    const parsed = parseGoogleMapsInput(val);
+    if (parsed.query) {
+        appData.plan.mapQuery = parsed.query;
+    } else if (!val.trim()) {
+        appData.plan.mapQuery = '';
+    }
+    if (parsed.lat !== null && parsed.lng !== null) {
+        appData.areaGuide.hotelLat = parsed.lat;
+        appData.areaGuide.hotelLng = parsed.lng;
+    }
+    updateMapStatusBadge('plan-map-status', parsed, true);
+    saveDraftAndRefreshPreview();
+}
+
+function handleSpotMapUrlInput(idx, val) {
+    const sp = appData.areaGuide.spots[idx];
+    sp.mapUrl = val;
+    const parsed = parseGoogleMapsInput(val);
+    if (parsed.query) {
+        sp.mapQuery = parsed.query;
+    } else if (!val.trim()) {
+        sp.mapQuery = '';
+    }
+    if (parsed.lat !== null && parsed.lng !== null) {
+        sp.lat = parsed.lat;
+        sp.lng = parsed.lng;
+    }
+    updateMapStatusBadge(`spot-map-status-${idx}`, parsed, false);
+    saveDraftAndRefreshPreview();
+}
+
+function renderMapStatusHtml(parsed, isHotel = false) {
+    if (!parsed || parsed.status === 'empty') {
+        return `<span class="text-slate-400"><i class="fab fa-google mr-1"></i>GoogleマップのURLを貼り付けるだけで位置情報・地図ピンが自動設定されます</span>`;
+    }
+    if (parsed.status === 'coords_ok') {
+        return `<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>URLから座標を自動取得しました（緯度: ${parsed.lat.toFixed(5)}, 経度: ${parsed.lng.toFixed(5)}）${isHotel ? ' ※周辺マップの宿泊先ピンも連動済み' : ''}</span>`;
+    }
+    if (parsed.status === 'short_url') {
+        return `<span class="text-amber-700"><i class="fas fa-info-circle text-amber-500 mr-1"></i>短縮URLを検出しました。「Google Mapsで開く」ボタンにはそのまま使えます。地図ピンも自動配置したい場合は、ブラウザで開いた後の長いURLを貼ってください。</span>`;
+    }
+    if (parsed.status === 'place_name_ok') {
+        return `<span class="text-blue-700"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>スポット名「${escapeHtml(parsed.query)}」を自動抽出しました。</span>`;
+    }
+    return `<span class="text-slate-600"><i class="fas fa-search-location text-indigo-500 mr-1"></i>「${escapeHtml(parsed.query || '入力内容')}」でマップ検索・リンクを生成します。</span>`;
+}
+
+function updateMapStatusBadge(elementId, parsed, isHotel) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        el.innerHTML = renderMapStatusHtml(parsed, isHotel);
+    }
+}
+
+/**
  * 画像選択・ドラッグ＆ドロップ・削除用の共通UIパーツ生成
  */
 function renderImageEditor(label, currentValue, pathKey) {
     const isDataUrl = currentValue && currentValue.startsWith('data:image');
+    const isHttpUrl = currentValue && /^https?:\/\//i.test(currentValue);
     const displayValue = isDataUrl ? '(アップロード済み画像データ)' : (currentValue || '');
-    const previewSrc = currentValue && isDataUrl ? currentValue : '';
+    const previewSrc = (isDataUrl || isHttpUrl) ? currentValue : '';
 
     return `
         <div class="bg-slate-50 p-3 rounded-xl border-2 border-dashed border-slate-300 transition-colors space-y-2"
@@ -1000,7 +1266,7 @@ function renderImageEditor(label, currentValue, pathKey) {
             </p>
             ${previewSrc ? `
                 <div class="mt-2 relative h-24 rounded-lg overflow-hidden border border-slate-200 bg-white">
-                    <img src="${previewSrc}" alt="プレビュー" class="w-full h-full object-cover">
+                    <img src="${escapeHtml(previewSrc)}" alt="プレビュー" onerror="this.style.display='none'" class="w-full h-full object-cover">
                 </div>
             ` : (currentValue ? `<p class="text-[10px] text-slate-500"><i class="fas fa-link mr-1"></i>参照パス: <code>${escapeHtml(currentValue)}</code></p>` : '')}
         </div>
@@ -1065,7 +1331,6 @@ function handleImageUpload(event, path) {
 }
 
 function processImageFile(file, path) {
-    // 画像を適度なサイズにリサイズ＆圧縮して軽量で高画質なDataURLに変換
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = new Image();
@@ -1120,7 +1385,7 @@ function renderEditorTab(tab) {
             <div class="space-y-5">
                 <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 flex items-center justify-between gap-2">
                     <p class="text-[11px] text-indigo-900">
-                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>各欄の薄い文字を参考に入力してください。完成例を見たい場合は右のボタンから読み込めます。
+                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>各欄の薄い文字を参考に入力してください。完成例を丸ごと見る場合は右のボタンから読み込めます。
                     </p>
                     <button type="button" onclick="loadSampleDataWithConfirm()" class="px-2.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white text-[11px] font-bold whitespace-nowrap transition shadow-sm">
                         例を読み込む
@@ -1214,6 +1479,7 @@ function renderEditorTab(tab) {
         `;
     } else if (tab === 'plan') {
         const p = appData.plan;
+        const parsedPlanMap = parseGoogleMapsInput(p.mapUrl || p.mapQuery);
         container.innerHTML = `
             <div class="space-y-6">
                 <div>
@@ -1236,9 +1502,12 @@ function renderEditorTab(tab) {
                             <label class="block text-xs font-bold text-slate-600 mb-1">郵便番号・住所</label>
                             <input type="text" value="${escapeHtml(p.postalAndAddress)}" placeholder="例：〒413-0503 静岡県賀茂郡河津町見高109-6" oninput="updateDataByPath('plan.postalAndAddress', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Googleマップ検索用住所・施設名</label>
-                            <input type="text" value="${escapeHtml(p.mapQuery)}" placeholder="例：静岡県賀茂郡河津町見高109-6" oninput="updateDataByPath('plan.mapQuery', this.value)" class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                        <div class="bg-blue-50/70 p-3 rounded-2xl border border-blue-200/80 space-y-1.5">
+                            <label class="block text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                <i class="fab fa-google text-blue-600"></i>宿泊先のGoogleマップ URL（貼り付けるだけでOK）
+                            </label>
+                            <input type="text" value="${escapeHtml(p.mapUrl || p.mapQuery)}" placeholder="例：https://www.google.com/maps/place/..." oninput="handlePlanMapUrlInput(this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-blue-300 bg-white focus:outline-none focus:border-blue-600">
+                            <p id="plan-map-status" class="text-[11px] leading-snug">${renderMapStatusHtml(parsedPlanMap, true)}</p>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -1509,8 +1778,11 @@ function renderEditorTab(tab) {
         container.innerHTML = `
             <div class="space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <h2 class="text-base font-bold text-slate-800">注意事項カード (${list.length}件)</h2>
-                    <button type="button" onclick="addCautionItem()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">注意事項カード (${list.length}件)</h2>
+                        <p class="text-[11px] text-slate-500">初期状態で定番の注意事項が入っています。自由に編集・追加・削除できます</p>
+                    </div>
+                    <button type="button" onclick="addCautionItem()" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition whitespace-nowrap">
                         <i class="fas fa-plus mr-1"></i>カード追加
                     </button>
                 </div>
@@ -1561,21 +1833,15 @@ function renderEditorTab(tab) {
         container.innerHTML = `
             <div class="space-y-5">
                 <div>
-                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">周辺マップ・宿泊先ピン設定</h2>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">周辺マップ・案内バナー設定</h2>
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">上部案内バナー文</label>
                             <textarea rows="2" placeholder="例：ここに掲載しているのはほんの一部！魅力的なスポットが他にもたくさんあるので、ぜひ調べてみてください✨" oninput="updateDataByPath('areaGuide.bannerText', this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">${escapeHtml(ag.bannerText)}</textarea>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">宿泊先の緯度 (Lat)</label>
-                                <input type="number" step="any" value="${ag.hotelLat}" placeholder="例：34.75405" oninput="updateDataByPath('areaGuide.hotelLat', parseFloat(this.value) || 0)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">宿泊先の経度 (Lng)</label>
-                                <input type="number" step="any" value="${ag.hotelLng}" placeholder="例：139.00159" oninput="updateDataByPath('areaGuide.hotelLng', parseFloat(this.value) || 0)" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-300">
-                            </div>
+                        <div class="bg-indigo-50/60 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-900 flex items-center justify-between gap-2">
+                            <span><i class="fas fa-hotel text-indigo-600 mr-1"></i>宿泊先ピンはPLANタブのGoogleマップURLと自動連動します。</span>
+                            <span class="font-mono text-[10px] text-slate-500 flex-shrink-0">${Number(ag.hotelLat).toFixed(4)}, ${Number(ag.hotelLng).toFixed(4)}</span>
                         </div>
                     </div>
                 </div>
@@ -1588,8 +1854,10 @@ function renderEditorTab(tab) {
                         </button>
                     </div>
                     <div class="space-y-3">
-                        ${ag.spots.map((sp, idx) => `
-                            <div class="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-2">
+                        ${ag.spots.map((sp, idx) => {
+                            const parsedSpotMap = parseGoogleMapsInput(sp.mapUrl || sp.mapQuery);
+                            return `
+                            <div class="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-2.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-bold text-indigo-600">#${idx + 1} ${escapeHtml(sp.shortName || '新規スポット')}</span>
                                     <button type="button" onclick="removeAreaSpot(${idx})" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash mr-1"></i>削除</button>
@@ -1612,6 +1880,13 @@ function renderEditorTab(tab) {
                                     <label class="block text-[10px] font-bold text-slate-500">正式名称</label>
                                     <input type="text" value="${escapeHtml(sp.name)}" placeholder="例：セブン-イレブン 伊豆河津駅前店" oninput="updateDataByPath('areaGuide.spots.${idx}.name', this.value)" class="w-full text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300">
                                 </div>
+                                <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-200/80 space-y-1">
+                                    <label class="block text-[10px] font-bold text-blue-900 flex items-center gap-1">
+                                        <i class="fab fa-google text-blue-600"></i>Googleマップ URL（貼り付けるだけでピン＆経路案内を自動設定）
+                                    </label>
+                                    <input type="text" value="${escapeHtml(sp.mapUrl || sp.mapQuery)}" placeholder="例：https://www.google.com/maps/place/..." oninput="handleSpotMapUrlInput(${idx}, this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-blue-300 bg-white focus:outline-none focus:border-blue-600">
+                                    <p id="spot-map-status-${idx}" class="text-[10px] leading-snug">${renderMapStatusHtml(parsedSpotMap, false)}</p>
+                                </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-slate-500">説明文</label>
                                     <textarea rows="2" placeholder="例：駅前にある便利なコンビニ。ちょっとした買い出しに便利です。" oninput="updateDataByPath('areaGuide.spots.${idx}.desc', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">${escapeHtml(sp.desc)}</textarea>
@@ -1632,22 +1907,12 @@ function renderEditorTab(tab) {
                                         <input type="text" value="${escapeHtml(sp.hours)}" placeholder="例：24時間営業 / 9:00〜21:00" oninput="updateDataByPath('areaGuide.spots.${idx}.hours', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-500">住所</label>
+                                        <label class="block text-[10px] font-bold text-slate-500">住所（任意）</label>
                                         <input type="text" value="${escapeHtml(sp.address)}" placeholder="例：静岡県賀茂郡河津町浜155-2" oninput="updateDataByPath('areaGuide.spots.${idx}.address', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500">地図ピン緯度 (Lat)</label>
-                                        <input type="number" step="any" value="${sp.lat}" placeholder="例：34.7485" oninput="updateDataByPath('areaGuide.spots.${idx}.lat', parseFloat(this.value) || 0)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500">地図ピン経度 (Lng)</label>
-                                        <input type="number" step="any" value="${sp.lng}" placeholder="例：138.9918" oninput="updateDataByPath('areaGuide.spots.${idx}.lng', parseFloat(this.value) || 0)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300">
-                                    </div>
-                                </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 </div>
             </div>
@@ -1656,11 +1921,12 @@ function renderEditorTab(tab) {
         const items = appData.checklist;
         container.innerHTML = `
             <div class="space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                <div class="border-b border-slate-200 pb-2">
                     <h2 class="text-base font-bold text-slate-800">持ち物リスト (${items.length}項目)</h2>
+                    <p class="text-[11px] text-slate-500">初期状態でサンプルと同じ持ち物リストが入っています。必要に応じて追加・編集してください</p>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="new-checklist-input" placeholder="例：財布、携帯電話、充電器、水着など" onkeydown="if(event.key==='Enter'){addChecklistItem();}" class="flex-1 text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="new-checklist-input" placeholder="例：水着、サングラス、トランプなど" onkeydown="if(event.key==='Enter'){addChecklistItem();}" class="flex-1 text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
                     <button type="button" onclick="addChecklistItem()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition">
                         <i class="fas fa-plus mr-1"></i>追加
                     </button>
@@ -1834,6 +2100,7 @@ function addAreaSpot() {
         address: "",
         accessShort: "",
         accessDetail: "",
+        mapUrl: "",
         mapQuery: "",
         lat: (Number(appData.areaGuide.hotelLat) || 35.6812) + 0.004,
         lng: (Number(appData.areaGuide.hotelLng) || 139.7671) - 0.004,
@@ -1884,9 +2151,14 @@ function loadSampleDataWithConfirm() {
 }
 
 /**
- * 完全なスタンドアロンHTMLコードを生成するジェネレーターエンジン
+ * 完全なスタンドアロンHTML / Googleサイト埋め込み用HTMLコードを生成するジェネレーターエンジン
+ * @param {object} data しおりデータ
+ * @param {object} options { isPreviewMode: boolean, forGoogleSites: boolean }
  */
-function generateShioriHTML(data, isPreviewMode = false) {
+function generateShioriHTML(data, options = {}) {
+    const isPreviewMode = Boolean(options.isPreviewMode);
+    const forGoogleSites = Boolean(options.forGoogleSites);
+
     const m = data.meta;
     const p = data.plan;
     const f = data.facility;
@@ -1906,6 +2178,13 @@ function generateShioriHTML(data, isPreviewMode = false) {
         }
         return src;
     };
+
+    // Googleマップの埋め込みURLおよび外部リンクURLを解決
+    const parsedHotelMap = parseGoogleMapsInput(p.mapUrl || p.mapQuery);
+    const hotelEmbedQuery = encodeURIComponent(parsedHotelMap.query || p.postalAndAddress || p.hotelName || '東京駅');
+    const hotelExternalMapUrl = parsedHotelMap.originalUrl
+        ? parsedHotelMap.originalUrl
+        : `https://maps.google.com/maps?q=${hotelEmbedQuery}`;
 
     const heroBgCss = m.heroImage
         ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('${escapeHtml(m.heroImage)}')`
@@ -2056,7 +2335,11 @@ ${eventsHtml}
     const renderCategoryCards = (catKey) => {
         return ag.spots.filter(sp => sp.category === catKey).map(sp => {
             const th = catTheme[catKey] || catTheme.shop;
-            const query = encodeURIComponent(sp.mapQuery || sp.name || '東京駅');
+            const parsedSpMap = parseGoogleMapsInput(sp.mapUrl || sp.mapQuery);
+            const fallbackQuery = encodeURIComponent(parsedSpMap.query || sp.address || sp.name || '東京駅');
+            const spotMapHref = parsedSpMap.originalUrl
+                ? parsedSpMap.originalUrl
+                : `https://maps.google.com/?q=${fallbackQuery}`;
             return `
                 <div class="${th.detailBg} p-4 rounded-xl border flex flex-col justify-between">
                     <div class="flex items-start">
@@ -2071,7 +2354,7 @@ ${eventsHtml}
                         </div>
                     </div>
                     <div class="mt-4 text-right">
-                        <a href="https://maps.google.com/?q=${query}" target="_blank" class="inline-block text-xs font-bold ${th.btn} border px-3 py-1.5 rounded-full hover:text-white transition">経路案内 <i class="fas fa-external-link-alt ml-1"></i></a>
+                        <a href="${escapeHtml(spotMapHref)}" target="_blank" rel="noopener noreferrer" class="inline-block text-xs font-bold ${th.btn} border px-3 py-1.5 rounded-full hover:text-white transition">経路案内 <i class="fas fa-external-link-alt ml-1"></i></a>
                     </div>
                 </div>`;
         }).join('\n');
@@ -2098,6 +2381,66 @@ ${eventsHtml}
     const checklistForScript = checklistDisplayItems.length > 0
         ? checklistDisplayItems
         : (isPreviewMode ? ['（持ち物リストを追加するとここに表示されます）'] : []);
+
+    // Googleサイト埋め込みモード用のレイアウト最適化クラス
+    const navHtml = forGoogleSites ? `
+<!-- Google Sites Sticky Section Navigation -->
+<nav class="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 py-1.5" id="navbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-12">
+            <div class="flex-shrink-0">
+                <a href="#top" class="font-serif text-lg font-bold text-primary transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
+            </div>
+            <div class="flex items-center space-x-3 sm:space-x-5 font-medium text-xs sm:text-sm overflow-x-auto hide-scrollbar py-1">
+                <a href="#plan" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">PLAN</a>
+                <a href="#facility" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">FACILITY</a>
+                <a href="#schedule" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">SCHEDULE</a>
+                <a href="#caution" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">CAUTION</a>
+                <a href="#area-guide" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">AREA</a>
+                <a href="#checklist" class="text-textDark hover:text-primary transition-colors whitespace-nowrap">持ち物</a>
+            </div>
+        </div>
+    </div>
+</nav>` : `
+<!-- Navigation -->
+<nav class="fixed w-full z-50 transition-all duration-300 py-2" id="navbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex-shrink-0">
+                <a href="#" class="font-serif text-xl font-bold text-white drop-shadow-md transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-5 lg:space-x-6 font-medium text-sm lg:text-base">
+                    <a href="#plan" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">PLAN</a>
+                    <a href="#facility" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">FACILITY</a>
+                    <a href="#schedule" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">SCHEDULE</a>
+                    <a href="#caution" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CAUTION</a>
+                    <a href="#area-guide" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">AREA GUIDE</a>
+                    <a href="#checklist" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CHECK LIST</a>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-btn" class="text-white hover:text-primary focus:outline-none drop-shadow-md transition-colors nav-btn">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full left-0 top-full border-t border-gray-100">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+            <a href="#plan" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">PLAN (旅の基本)</a>
+            <a href="#facility" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">FACILITY (施設)</a>
+            <a href="#schedule" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">SCHEDULE (日程)</a>
+            <a href="#caution" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CAUTION (注意)</a>
+            <a href="#area-guide" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">AREA GUIDE (周辺・アクセス)</a>
+            <a href="#checklist" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CHECK LIST (持ち物)</a>
+        </div>
+    </div>
+</nav>`;
+
+    const heroHeightClass = forGoogleSites ? 'min-h-[480px] md:min-h-[560px] py-20' : 'h-screen';
 
     return `<!DOCTYPE html>
 <html lang="ja">
@@ -2154,7 +2497,7 @@ ${eventsHtml}
             background-image: ${heroBgCss};
             background-size: cover;
             background-position: center;
-            background-attachment: ${isPreviewMode ? 'scroll' : 'fixed'};
+            background-attachment: ${(isPreviewMode || forGoogleSites) ? 'scroll' : 'fixed'};
         }
 
         .section-title {
@@ -2211,71 +2554,35 @@ ${eventsHtml}
         }
     </style>
 </head>
-<body class="antialiased relative">
+<body id="top" class="antialiased relative">
 
-<!-- Navigation -->
-<nav class="fixed w-full z-50 transition-all duration-300 py-2" id="navbar">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <div class="flex-shrink-0">
-                <a href="#" class="font-serif text-xl font-bold text-white drop-shadow-md transition-colors nav-brand">${valOrGuide(m.navBrand, 'LOGO 2026')}</a>
-            </div>
-            <div class="hidden md:block">
-                <div class="ml-10 flex items-baseline space-x-5 lg:space-x-6 font-medium text-sm lg:text-base">
-                    <a href="#plan" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">PLAN</a>
-                    <a href="#facility" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">FACILITY</a>
-                    <a href="#schedule" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">SCHEDULE</a>
-                    <a href="#caution" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CAUTION</a>
-                    <a href="#area-guide" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">AREA GUIDE</a>
-                    <a href="#checklist" class="text-white drop-shadow-md hover:text-primary transition-colors nav-link">CHECK LIST</a>
-                </div>
-            </div>
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-btn" class="text-white hover:text-primary focus:outline-none drop-shadow-md transition-colors nav-btn">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full left-0 top-full border-t border-gray-100">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
-            <a href="#plan" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">PLAN (旅の基本)</a>
-            <a href="#facility" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">FACILITY (施設)</a>
-            <a href="#schedule" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">SCHEDULE (日程)</a>
-            <a href="#caution" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CAUTION (注意)</a>
-            <a href="#area-guide" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">AREA GUIDE (周辺・アクセス)</a>
-            <a href="#checklist" class="block px-3 py-3 text-textDark hover:text-primary hover:bg-gray-50 rounded-md font-medium">CHECK LIST (持ち物)</a>
-        </div>
-    </div>
-</nav>
+${navHtml}
 
 <!-- Hero Section -->
-<header class="hero-bg h-screen flex items-center justify-center relative">
+<header class="hero-bg ${heroHeightClass} flex items-center justify-center relative">
     <div class="text-center px-4 fade-in visible">
         <p class="text-white text-lg md:text-xl mb-2 tracking-widest font-light">${valOrGuide(m.heroSubtitle, 'TRAVEL NOTE')}</p>
-        <h1 class="font-serif text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">${valOrGuide(m.heroTitle, '旅のしおりタイトル')}</h1>
-        <p class="text-white text-2xl md:text-3xl font-medium tracking-wider mb-8 drop-shadow-md">${valOrGuide(m.heroOrg, '団体名・サブタイトル')}</p>
+        <h1 class="font-serif text-4xl sm:text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">${valOrGuide(m.heroTitle, '旅のしおりタイトル')}</h1>
+        <p class="text-white text-xl sm:text-2xl md:text-3xl font-medium tracking-wider mb-8 drop-shadow-md">${valOrGuide(m.heroOrg, '団体名・サブタイトル')}</p>
         
-        <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 inline-block border border-white/30 text-white shadow-xl">
-            <p class="text-lg md:text-xl mb-1"><i class="far fa-calendar-alt mr-2"></i> ${valOrGuide(m.heroDate, 'YYYY.MM.DD - MM.DD')}</p>
-            <p class="text-lg md:text-xl font-bold"><i class="fas fa-map-marker-alt mr-2 text-red-400"></i> ${valOrGuide(m.heroLocation, '行き先エリア')}</p>
+        <div class="bg-white/20 backdrop-blur-md rounded-2xl p-5 sm:p-6 inline-block border border-white/30 text-white shadow-xl">
+            <p class="text-base sm:text-lg md:text-xl mb-1"><i class="far fa-calendar-alt mr-2"></i> ${valOrGuide(m.heroDate, 'YYYY.MM.DD - MM.DD')}</p>
+            <p class="text-base sm:text-lg md:text-xl font-bold"><i class="fas fa-map-marker-alt mr-2 text-red-400"></i> ${valOrGuide(m.heroLocation, '行き先エリア')}</p>
         </div>
     </div>
     
     <!-- Scroll indicator -->
-    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
         <a href="#plan" class="text-white opacity-80 hover:opacity-100">
-            <i class="fas fa-chevron-down text-3xl"></i>
+            <i class="fas fa-chevron-down text-2xl sm:text-3xl"></i>
         </a>
     </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-16 space-y-24">
+<main class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-14 sm:py-16 space-y-20 sm:space-y-24">
 
     <!-- PLAN Section -->
-    <section id="plan" class="pt-8 fade-in">
+    <section id="plan" class="pt-6 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">PLAN</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">旅の基本情報</p>
@@ -2310,7 +2617,7 @@ ${eventsHtml}
                         
                         <div class="flex flex-wrap gap-3">
                             ${p.phone ? `<a href="tel:${escapeHtml(p.phone)}" class="inline-flex items-center justify-center text-primary bg-white hover:bg-primary hover:text-white border border-primary font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm"><i class="fas fa-phone-alt mr-2"></i> ${escapeHtml(p.phone)}</a>` : ''}
-                            ${p.websiteUrl ? `<a href="${escapeHtml(p.websiteUrl)}" target="_blank" class="inline-flex items-center justify-center text-white bg-primary hover:opacity-90 border border-transparent font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm"><i class="fas fa-external-link-alt mr-2"></i> 公式サイトを見る</a>` : ''}
+                            ${p.websiteUrl ? `<a href="${escapeHtml(p.websiteUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-white bg-primary hover:opacity-90 border border-transparent font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm"><i class="fas fa-external-link-alt mr-2"></i> 公式サイトを見る</a>` : ''}
                             <a href="#area-guide" class="inline-flex items-center justify-center text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 font-medium text-sm px-4 py-2 rounded-full transition-colors shadow-sm">
                                 <i class="fas fa-map mr-2"></i> 周辺マップを見る
                             </a>
@@ -2322,10 +2629,10 @@ ${eventsHtml}
                 <div>
                     <h4 class="text-xl font-bold mb-4 flex items-center text-primary"><i class="fas fa-map-marker-alt mr-2"></i>宿泊先マップ</h4>
                     <div class="w-full h-64 sm:h-80 rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-3">
-                        <iframe src="https://maps.google.com/maps?q=${encodeURIComponent(p.mapQuery || '東京駅')}&t=&z=13&ie=UTF8&iwloc=&output=embed" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="https://maps.google.com/maps?q=${hotelEmbedQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed" class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                     <div class="text-right">
-                        <a href="https://maps.google.com/maps?q=${encodeURIComponent(p.mapQuery || '東京駅')}" target="_blank" class="inline-flex items-center bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white px-5 py-2 rounded-full transition-colors border border-primary/20 text-sm shadow-sm">
+                        <a href="${escapeHtml(hotelExternalMapUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white px-5 py-2 rounded-full transition-colors border border-primary/20 text-sm shadow-sm">
                             <i class="fas fa-external-link-alt mr-2"></i>Google Mapsで開く
                         </a>
                     </div>
@@ -2351,7 +2658,7 @@ ${eventsHtml}
     </section>
 
     <!-- FACILITY Section -->
-    <section id="facility" class="pt-8 fade-in">
+    <section id="facility" class="pt-6 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">FACILITY</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">施設・アメニティ案内</p>
@@ -2419,7 +2726,7 @@ ${amenitiesHtml}
     </section>
 
     <!-- SCHEDULE Section -->
-    <section id="schedule" class="pt-8 fade-in">
+    <section id="schedule" class="pt-6 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">SCHEDULE</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">旅行日程</p>
@@ -2444,7 +2751,7 @@ ${scheduleDaysHtml}
     </section>
 
     <!-- CAUTION Section -->
-    <section id="caution" class="pt-8 fade-in">
+    <section id="caution" class="pt-6 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">CAUTION</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">注意事項</p>
@@ -2456,7 +2763,7 @@ ${cautionsHtml}
     </section>
 
     <!-- AREA GUIDE Section -->
-    <section id="area-guide" class="pt-8 fade-in">
+    <section id="area-guide" class="pt-6 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">AREA GUIDE</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">周辺施設・アクセス</p>
@@ -2515,7 +2822,7 @@ ${renderCategoryCards('gourmet')}
     </section>
 
     <!-- CHECK LIST Section -->
-    <section id="checklist" class="pt-8 pb-16 fade-in">
+    <section id="checklist" class="pt-6 pb-16 fade-in">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">CHECK LIST</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">持ち物リスト</p>
@@ -2561,6 +2868,7 @@ ${renderCategoryCards('gourmet')}
 </div>
 
 <script>
+    ${!forGoogleSites ? `
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -2594,14 +2902,17 @@ ${renderCategoryCards('gourmet')}
     // Mobile Menu Toggle
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
-    mobileBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-    mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
+    if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
         });
-    });
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    }
+    ` : ''}
 
     // Fade-in Animation Observer
     const observerOptions = {
@@ -2648,7 +2959,7 @@ ${renderCategoryCards('gourmet')}
         areaMap = L.map('area-map').setView([${Number(ag.hotelLat) || 34.750}, ${Number(ag.hotelLng) || 138.995}], 14);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
         }).addTo(areaMap);
 
         markersLayer = L.featureGroup().addTo(areaMap);
@@ -2685,6 +2996,16 @@ ${renderCategoryCards('gourmet')}
         }));
 
         updateMapMarkers('all');
+
+        // Googleサイト等のiframe内でマップ描画サイズがずれるのを防止
+        setTimeout(() => {
+            if (areaMap) {
+                areaMap.invalidateSize();
+                if (markersLayer.getLayers().length > 0) {
+                    areaMap.fitBounds(markersLayer.getBounds(), { padding: [30, 30], maxZoom: 16 });
+                }
+            }
+        }, 350);
 
         window.addEventListener('resize', () => {
             areaMap.invalidateSize();
@@ -2801,7 +3122,10 @@ ${renderCategoryCards('gourmet')}
     const items = ${JSON.stringify(checklistForScript)};
 
     const checklistContainer = document.getElementById('checklist-container');
-    const savedChecks = JSON.parse(localStorage.getItem(${JSON.stringify(m.storageKey || 'shioriChecklist')})) || {};
+    let savedChecks = {};
+    try {
+        savedChecks = JSON.parse(localStorage.getItem(${JSON.stringify(m.storageKey || 'shioriChecklist')})) || {};
+    } catch (e) {}
 
     items.forEach((item, index) => {
         const isChecked = savedChecks[index] || false;
@@ -2826,7 +3150,9 @@ ${renderCategoryCards('gourmet')}
             }
 
             savedChecks[index] = isNowChecked;
-            localStorage.setItem(${JSON.stringify(m.storageKey || 'shioriChecklist')}, JSON.stringify(savedChecks));
+            try {
+                localStorage.setItem(${JSON.stringify(m.storageKey || 'shioriChecklist')}, JSON.stringify(savedChecks));
+            } catch (e) {}
         });
         
         checklistContainer.appendChild(div);
@@ -2848,7 +3174,7 @@ function updatePreviewIframe() {
         }
     } catch (e) {}
 
-    const htmlCode = generateShioriHTML(appData, true);
+    const htmlCode = generateShioriHTML(appData, { isPreviewMode: true, forGoogleSites: false });
     iframe.srcdoc = htmlCode;
     iframe.onload = () => {
         try {
@@ -2857,6 +3183,50 @@ function updatePreviewIframe() {
             }
         } catch (e) {}
     };
+}
+
+/**
+ * 出力モーダルのモード切り替え
+ */
+function openExportModal(mode = 'gsites') {
+    const exportModal = document.getElementById('export-modal');
+    switchExportMode(mode);
+    exportModal.classList.remove('hidden');
+    exportModal.classList.add('flex');
+}
+
+function switchExportMode(mode) {
+    currentExportMode = mode;
+    const codeArea = document.getElementById('generated-code-area');
+    const tabGsites = document.getElementById('tab-export-gsites');
+    const tabHtml = document.getElementById('tab-export-html');
+    const guideGsites = document.getElementById('guide-export-gsites');
+    const guideHtml = document.getElementById('guide-export-html');
+    const modalIcon = document.getElementById('export-modal-icon');
+    const modalTitle = document.getElementById('export-modal-title');
+    const modalSubtitle = document.getElementById('export-modal-subtitle');
+
+    if (mode === 'gsites') {
+        codeArea.value = generateShioriHTML(appData, { isPreviewMode: false, forGoogleSites: true });
+        tabGsites.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-blue-600 text-blue-700 bg-white flex items-center gap-1.5 transition';
+        tabHtml.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition';
+        guideGsites.classList.remove('hidden');
+        guideHtml.classList.add('hidden');
+        modalIcon.className = 'w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm';
+        modalIcon.innerHTML = '<i class="fab fa-google text-lg"></i>';
+        modalTitle.textContent = 'Googleサイト埋め込み用コード出力';
+        modalSubtitle.textContent = 'Googleサイトの「埋め込みコード」に貼り付けて部員に共有できます';
+    } else {
+        codeArea.value = generateShioriHTML(appData, { isPreviewMode: false, forGoogleSites: false });
+        tabHtml.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-indigo-600 text-indigo-700 bg-white flex items-center gap-1.5 transition';
+        tabGsites.className = 'px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-1.5 transition';
+        guideHtml.classList.remove('hidden');
+        guideGsites.classList.add('hidden');
+        modalIcon.className = 'w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm';
+        modalIcon.innerHTML = '<i class="fas fa-code text-lg"></i>';
+        modalTitle.textContent = '単体HTMLファイル (index.html) 出力';
+        modalSubtitle.textContent = 'この1ファイルだけでデザイン・地図・チェックリストすべてが動作します';
+    }
 }
 
 /**
@@ -2931,29 +3301,36 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('プレビューを再読み込みしました');
     });
 
-    // HTML出力モーダル
+    // コード出力モーダル（Googleサイト出力 / HTML出力）
     const exportModal = document.getElementById('export-modal');
     const codeArea = document.getElementById('generated-code-area');
 
-    document.getElementById('btn-export-html').addEventListener('click', () => {
-        codeArea.value = generateShioriHTML(appData, false);
-        exportModal.classList.remove('hidden');
-        exportModal.classList.add('flex');
-    });
+    document.getElementById('btn-export-gsites').addEventListener('click', () => openExportModal('gsites'));
+    document.getElementById('btn-export-html').addEventListener('click', () => openExportModal('html'));
+    document.getElementById('tab-export-gsites').addEventListener('click', () => switchExportMode('gsites'));
+    document.getElementById('tab-export-html').addEventListener('click', () => switchExportMode('html'));
 
     document.getElementById('close-export-modal').addEventListener('click', () => {
         exportModal.classList.add('hidden');
         exportModal.classList.remove('flex');
     });
 
-    document.getElementById('btn-copy-code').addEventListener('click', () => {
+    const copyGeneratedCode = (successMsg) => {
         codeArea.select();
         try {
             document.execCommand('copy');
-            showToast('HTMLコードをクリップボードにコピーしました！');
+            showToast(successMsg);
         } catch (err) {
             showToast('コピーに失敗しました。手動で選択してコピーしてください。', true);
         }
+    };
+
+    document.getElementById('btn-copy-gsites-code').addEventListener('click', () => {
+        copyGeneratedCode('Googleサイト用埋め込みコードをコピーしました！Googleサイトの「埋め込みコード」に貼り付けてください');
+    });
+
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+        copyGeneratedCode('HTMLコードをクリップボードにコピーしました！');
     });
 
     document.getElementById('btn-download-html').addEventListener('click', () => {
@@ -3055,13 +3432,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-reset').addEventListener('click', () => {
         showCustomConfirm(
             '新規白紙（初期状態）に戻す',
-            'これまでの入力内容がクリアされ、入力ガイド付きの白紙テンプレートに戻ります。よろしいですか？',
+            'これまでの入力内容がクリアされ、初期状態に戻ります（注意事項と持ち物の基本例は残ります）。よろしいですか？',
             () => {
                 appData = normalizeShioriData(EMPTY_SHIORI_DATA);
-                localStorage.removeItem('shioriGeneratorDraft_v2');
+                localStorage.removeItem('shioriGeneratorDraft_v4');
                 renderEditorTab(currentTab);
                 updatePreviewIframe();
-                showToast('新規白紙状態に戻しました');
+                showToast('初期状態に戻しました（注意事項・持ち物の基本例は読み込み済み）');
             }
         );
     });
