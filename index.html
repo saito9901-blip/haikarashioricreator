@@ -60,7 +60,7 @@
             </div>
             <div>
                 <h1 class="font-bold text-sm sm:text-base text-slate-800 leading-tight">旅のしおり Webページ作成ツール</h1>
-                <p class="text-[11px] text-slate-500 hidden sm:block">GoogleマップURL対応・Netlify Dropで即公開＆検索除け対策済みHTMLを生成</p>
+                <p class="text-[11px] text-slate-500 hidden sm:block">入力するだけでスマホ対応のWebしおりが完成・無料で限定公開できます</p>
             </div>
         </div>
 
@@ -76,26 +76,25 @@
 
         <!-- アクションボタン群 -->
         <div class="flex items-center gap-1.5 sm:gap-2">
-            <button id="btn-help" title="ツールの使い方・Netlify Drop公開説明書を見る" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 text-xs font-bold transition flex items-center gap-1.5">
-                <i class="fas fa-question-circle text-indigo-500"></i>
-                <span class="hidden md:inline">説明書</span>
+            <button id="btn-help" title="初心者向け・ツールの使い方と公開説明書を見る" class="px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl border border-indigo-200 bg-indigo-50/70 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition flex items-center gap-1.5">
+                <i class="fas fa-book-open text-indigo-600"></i>
+                <span>取扱説明書</span>
             </button>
-            <button id="btn-load-sample" title="夏合宿のしおりサンプルを読み込む" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold transition flex items-center gap-1.5">
+            <button id="btn-load-sample" title="完成見本（夏合宿のしおりサンプル）を読み込む" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-800 hover:bg-amber-100 text-xs font-bold transition flex items-center gap-1.5">
                 <i class="fas fa-magic text-amber-500"></i>
-                <span class="hidden xl:inline">サンプル読込</span>
+                <span class="hidden xl:inline">見本を読込</span>
             </button>
             <button id="btn-reset" title="白紙（初期状態）に戻す" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-red-600 text-xs font-medium transition flex items-center gap-1.5">
                 <i class="fas fa-file-alt"></i>
                 <span class="hidden xl:inline">新規白紙</span>
             </button>
-            <button id="btn-json-io" title="編集データの保存・読込" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5">
-                <i class="fas fa-database"></i>
-                <span class="hidden xl:inline">保存/読込</span>
+            <button id="btn-json-io" title="編集データのバックアップ保存・復元" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium transition flex items-center gap-1.5">
+                <i class="fas fa-save"></i>
+                <span class="hidden xl:inline">データ保存</span>
             </button>
-            <button id="btn-export-html" title="Netlify Drop用のHTML・検索除け一式を出力" class="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span class="hidden sm:inline">HTML出力 (Netlify用)</span>
-                <span class="sm:hidden">HTML出力</span>
+            <button id="btn-export-html" title="完成したしおりをダウンロードして公開する" class="px-3.5 py-2 sm:px-4 sm:py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fas fa-download"></i>
+                <span>完成・ダウンロード</span>
             </button>
         </div>
     </header>
@@ -169,17 +168,18 @@
         </main>
     </div>
 
-    <!-- HTML出力モーダル（Netlify Drop 公開＆検索除けパッケージ出力） -->
+    <!-- 完成・ダウンロードモーダル（シンプル＆丁寧ガイド） -->
     <div id="export-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
-        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
+            <!-- ヘッダー -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-teal-50/70">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
-                        <i class="fas fa-cloud-upload-alt text-lg"></i>
+                        <i class="fas fa-check-circle text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-lg text-slate-800">Netlify Drop 公開用HTML・検索除けパッケージ出力</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">フォルダごと Netlify Drop にドラッグ＆ドロップするだけで即公開・メンバー共有できます</p>
+                        <h2 class="font-bold text-lg text-slate-800">しおりのダウンロードと公開手順</h2>
+                        <p class="text-xs text-slate-600 mt-0.5">あと2ステップでメンバーに共有できるWebページが完成します</p>
                     </div>
                 </div>
                 <button id="close-export-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
@@ -187,39 +187,70 @@
                 </button>
             </div>
             
-            <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
-                <!-- Netlify Drop 公開手順＆ダウンロードガイド -->
-                <div class="bg-teal-50/80 p-4 rounded-2xl border border-teal-200 space-y-3">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <span class="text-xs font-bold text-teal-900 flex items-center gap-1.5">
-                            <i class="fas fa-rocket text-teal-600"></i>Netlify Drop で公開する手順（無料・30秒で完了）
-                        </span>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <button id="btn-download-zip" class="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="index.html + robots.txt + _headers が入ったフォルダ一式をZIPで保存">
-                                <i class="fas fa-file-archive"></i>検索除け完全パック (ZIP)
-                            </button>
-                            <button id="btn-download-html" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                                <i class="fas fa-download"></i>index.html 単体保存
-                            </button>
-                            <button id="btn-copy-code" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                                <i class="far fa-copy"></i>HTMLコピー
-                            </button>
-                        </div>
+            <div class="p-5 sm:p-6 flex-1 overflow-y-auto space-y-5">
+                <!-- 現在のプライバシー・検索除けステータス -->
+                <div id="export-security-summary" class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs text-slate-700 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                    <!-- JSで現在の検索除け・パスコード状況を表示 -->
+                </div>
+
+                <!-- STEP 1：ダウンロード -->
+                <div class="bg-teal-50/60 p-5 rounded-2xl border-2 border-teal-200 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-teal-600 text-white text-xs font-bold">STEP 1</span>
+                        <h3 class="font-bold text-base text-teal-950">しおりファイル一式をダウンロードする</h3>
                     </div>
+                    <p class="text-xs text-teal-900 leading-relaxed">
+                        下の緑色のボタンを押すと、Webしおり本体（<code>index.html</code>）と「Google検索に載せないための保護ファイル」が1つにまとまったZIPファイルが保存されます。
+                    </p>
+                    <button id="btn-download-zip" class="w-full py-3.5 px-5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white text-sm sm:text-base font-bold shadow-md transition flex items-center justify-center gap-2.5">
+                        <i class="fas fa-file-archive text-lg"></i>
+                        <span>しおり一式をダウンロードする（ZIP形式）</span>
+                    </button>
+                    <p class="text-[11px] text-teal-800 text-center">
+                        ※ダウンロード後、パソコンでZIPファイルを右クリック→「すべて展開（解凍）」してフォルダを取り出してください。
+                    </p>
+                </div>
 
-                    <ol class="text-xs text-teal-950 space-y-1.5 list-decimal list-inside leading-relaxed">
-                        <li>上の<strong>「検索除け完全パック (ZIP)」</strong>（推奨）または<strong>「index.html 単体保存」</strong>をダウンロードします。<br>
-                        <span class="text-[11px] text-teal-800 ml-4">※ZIPを解凍すると <code>index.html</code>・<code>robots.txt</code>・<code>_headers</code> が入ったフォルダが作成されます（単体保存の場合は空フォルダを作って <code>index.html</code> を入れてください）。</span></li>
-                        <li><a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="underline font-bold text-teal-700 hover:text-teal-900">Netlify Drop (app.netlify.com/drop)</a> を開き、点線枠の中に<strong>フォルダごとドラッグ＆ドロップ</strong>します。</li>
-                        <li>数秒でランダムな公開URL（例：<code>https://〇〇-〇〇.netlify.app</code>）が発行されるので、そのURLをメンバーのLINE・Discord等に共有してください！</li>
+                <!-- STEP 2：Netlify Dropで公開 -->
+                <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-200 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">STEP 2</span>
+                        <h3 class="font-bold text-base text-indigo-950">Netlify Drop にドラッグ＆ドロップして公開！</h3>
+                    </div>
+                    <ol class="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+                        <li>下のボタンから無料公開サービス <strong>「Netlify Drop」</strong> を開きます。</li>
+                        <li>画面の点線枠の中に、STEP 1で解凍した<strong>フォルダを丸ごとドラッグ＆ドロップ</strong>します。</li>
+                        <li>数秒で <code>https://〇〇-〇〇.netlify.app</code> のような専用URLが発行されるので、そのURLをLINEやDiscordでメンバーに送れば完了です！</li>
                     </ol>
-
-                    <div id="export-security-summary" class="bg-white/90 p-2.5 rounded-xl border border-teal-200/80 text-[11px] text-slate-700 flex flex-wrap items-center gap-x-4 gap-y-1">
-                        <!-- JSで現在の検索除けステータスを表示 -->
+                    <div class="pt-1">
+                        <a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 border-2 border-indigo-300 text-xs sm:text-sm font-bold shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Netlify Drop の公開ページを開く（別タブ）</span>
+                        </a>
                     </div>
                 </div>
 
-                <textarea id="generated-code-area" readonly class="w-full flex-1 min-h-[250px] font-mono text-xs bg-slate-900 text-emerald-300 p-4 rounded-2xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
+                <!-- その他の保存方法・コード確認（折りたたみ式でシンプルに） -->
+                <details class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+                    <summary class="px-4 py-3 text-xs font-bold text-slate-600 cursor-pointer hover:bg-slate-100 transition flex items-center justify-between">
+                        <span><i class="fas fa-sliders-h mr-1.5 text-slate-400"></i>その他の保存方法・HTMLソースコードの確認（上級者向け）</span>
+                        <span class="text-[11px] text-slate-400">クリックで開閉</span>
+                    </summary>
+                    <div class="p-4 border-t border-slate-200 space-y-3 bg-white">
+                        <p class="text-xs text-slate-500">
+                            ZIPではなく <code>index.html</code> 単体で保存したい場合や、HTMLコードを直接コピーしたい場合はこちらをご利用ください。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-download-html" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                                <i class="fas fa-file-code"></i>index.html 単体で保存
+                            </button>
+                            <button id="btn-copy-code" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="far fa-copy"></i>HTMLコードをコピー
+                            </button>
+                        </div>
+                        <textarea id="generated-code-area" readonly class="w-full h-44 font-mono text-[11px] bg-slate-900 text-emerald-300 p-3 rounded-xl border border-slate-700 focus:outline-none resize-none leading-relaxed"></textarea>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -229,30 +260,32 @@
         <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-database text-indigo-600"></i>プロジェクトデータの保存・復元 (JSON)
+                    <i class="fas fa-save text-indigo-600"></i>編集データのバックアップ保存・復元
                 </h2>
                 <button id="close-json-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="p-5 flex-1 overflow-y-auto space-y-4">
-                <p class="text-xs text-slate-600">現在の編集内容をJSONデータとして保存したり、以前保存したJSONデータを貼り付けて復元したりできます。次回の合宿で使い回す際にも便利です。</p>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    入力途中のデータをファイル（JSON形式）としてパソコンに保存したり、以前保存したデータを読み込んで続きから編集したりできます。次の合宿や旅行でテンプレートとして使い回すときにも便利です。
+                </p>
                 <div class="flex flex-wrap gap-2">
-                    <button id="btn-copy-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
-                        <i class="far fa-copy mr-1"></i>JSONをコピー
+                    <button id="btn-download-json" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                        <i class="fas fa-download mr-1.5"></i>バックアップファイルを保存
                     </button>
-                    <button id="btn-download-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
-                        <i class="fas fa-download mr-1"></i>JSONファイル保存
-                    </button>
-                    <label class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition cursor-pointer">
-                        <i class="fas fa-upload mr-1"></i>JSONファイル読込
+                    <label class="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition cursor-pointer">
+                        <i class="fas fa-upload mr-1.5"></i>バックアップファイルを読込
                         <input type="file" id="input-upload-json" accept=".json" class="hidden">
                     </label>
+                    <button id="btn-copy-json" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                        <i class="far fa-copy mr-1"></i>テキストをコピー
+                    </button>
                 </div>
-                <textarea id="json-data-area" class="w-full h-64 font-mono text-xs bg-slate-50 text-slate-800 p-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
+                <textarea id="json-data-area" class="w-full h-56 font-mono text-xs bg-slate-50 text-slate-800 p-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
                 <div class="flex justify-end">
                     <button id="btn-apply-json" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
-                        <i class="fas fa-check mr-1"></i>このJSONデータを反映する
+                        <i class="fas fa-check mr-1"></i>このデータを編集画面に反映する
                     </button>
                 </div>
             </div>
@@ -271,17 +304,17 @@
         </div>
     </div>
 
-    <!-- 使い方・説明書モーダル -->
+    <!-- 丁寧でわかりやすい使い方・説明書モーダル -->
     <div id="help-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6">
-        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-indigo-50/70">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
-                        <i class="fas fa-book-reader"></i>
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-indigo-50/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+                        <i class="fas fa-book-open text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-lg text-slate-800">旅のしおり Webページ作成ツール 説明書</h2>
-                        <p class="text-xs text-slate-500">Netlify Drop 公開手順・徹底検索除け対策・編集ガイド</p>
+                        <h2 class="font-bold text-lg text-slate-800">はじめての方でも安心！取扱説明書</h2>
+                        <p class="text-xs text-slate-600">しおりの作成から無料公開・検索除け対策までわかりやすく解説します</p>
                     </div>
                 </div>
                 <button id="close-help-modal" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
@@ -289,83 +322,139 @@
                 </button>
             </div>
             
-            <div class="p-5 sm:p-7 flex-1 overflow-y-auto space-y-6 text-sm text-slate-700 leading-relaxed">
-                <section class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
-                    <h3 class="font-bold text-base text-indigo-700 mb-2 flex items-center gap-2">
-                        <i class="fas fa-sparkles"></i>1. このツールについて
+            <div class="p-5 sm:p-7 flex-1 overflow-y-auto space-y-7 text-sm text-slate-700 leading-relaxed">
+                <!-- はじめに -->
+                <section class="bg-gradient-to-br from-indigo-50 to-blue-50/70 p-5 rounded-2xl border border-indigo-100 space-y-2">
+                    <h3 class="font-bold text-base text-indigo-900 flex items-center gap-2">
+                        <i class="fas fa-sparkles text-indigo-600"></i>このツールでできること
                     </h3>
-                    <p class="text-xs sm:text-sm text-slate-600">
-                        合宿や遠征・旅行の「Webしおり」を、プログラミング知識なしで作成できるツールです。作成したしおりは <strong>Netlify Drop</strong> にドラッグ＆ドロップするだけで無料公開でき、<strong>検索エンジンにヒットしないための多重検索除け対策</strong>も自動で組み込まれます。
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        合宿・遠征・ゼミ旅行・グループ旅行などの<strong>「スマホで見られるWebしおり」</strong>を、専門知識なしで簡単に作れるツールです。<br>
+                        左側のフォームに入力すると、右側のプレビュー画面にリアルタイムで反映されます。完成したデータは無料サービス「Netlify Drop」を使うことで、<strong>メンバーだけに共有できる専用URL</strong>としてすぐに公開できます。
                     </p>
                 </section>
 
-                <section class="space-y-3">
-                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
-                        <i class="fas fa-shoe-prints"></i>2. 基本的な作成手順（4ステップ）
+                <!-- 全体の流れ（5ステップ） -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-base text-slate-800 border-b-2 border-indigo-100 pb-2 flex items-center gap-2">
+                        <i class="fas fa-list-ol text-indigo-600"></i>完成までの5ステップ（全体の流れ）
                     </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 1：基本情報・検索除け設定</span>
-                            <p class="text-xs text-slate-600">表紙やタイトルを入力し、必要に応じて<strong>「閲覧用パスコード（合言葉）」</strong>を設定します。注意事項と持ち物リストは初期状態から定番の例が入っています。</p>
+
+                    <div class="space-y-3">
+                        <!-- STEP 1 -->
+                        <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex gap-3.5 items-start">
+                            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-sm text-slate-800">まずは「見本を読込」で完成イメージを見てみよう</h4>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    画面上部の<strong>「見本を読込」</strong>ボタンを押すと、「夏合宿のしおり」の完成サンプルが読み込まれます。どんな項目が入るのか、スマホ幅でどう見えるのかを最初に確認すると入力がとてもスムーズになります。（※白紙から作りたいときは「新規白紙」でいつでも戻せます）
+                                </p>
+                            </div>
                         </div>
-                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-xs mb-1">STEP 2：GoogleマップURLを貼るだけ</span>
-                            <p class="text-xs text-slate-600">PLAN（宿泊先）やAREA（周辺スポット）の地図設定は、<strong>GoogleマップのURLをコピーして貼り付けるだけ</strong>で緯度・経度と地図ピン、経路案内リンクが自動設定されます。</p>
+
+                        <!-- STEP 2 -->
+                        <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex gap-3.5 items-start">
+                            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-sm text-slate-800">左上のタブを切り替えて順番に入力する</h4>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    <strong>「基本・検索除け」→「PLAN（宿泊先・集合）」→「FACILITY（施設・間取り）」→「SCHEDULE（日程）」→「CAUTION（注意）」→「AREA（周辺マップ）」→「持ち物」</strong>の順にタブを切り替えて文字を入力します。<br>
+                                    ※「CAUTION（注意事項）」と「持ち物」には、最初からよく使われる定番の項目が入っているため、必要な部分だけ書き換えるだけでOKです。
+                                </p>
+                            </div>
                         </div>
-                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs mb-1">STEP 3：写真のドラッグ＆ドロップ</span>
-                            <p class="text-xs text-slate-600">表紙・宿泊先・施設紹介の写真枠に、パソコン内の画像ファイルを<strong>ドラッグ＆ドロップ</strong>すると自動リサイズされてHTML内に埋め込まれます（外部画像サーバー不要）。</p>
+
+                        <!-- STEP 3 -->
+                        <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex gap-3.5 items-start">
+                            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                            <div class="space-y-1.5">
+                                <h4 class="font-bold text-sm text-slate-800">写真やGoogleマップを入れる（とても簡単です！）</h4>
+                                <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside leading-relaxed">
+                                    <li><strong>写真の入れ方：</strong> パソコン内の画像ファイルを点線枠に<strong>ドラッグ＆ドロップ</strong>（または「写真を選択」）するだけ！自動でちょうど良いサイズに調整されてしおり内に埋め込まれます。</li>
+                                    <li><strong>Googleマップの入れ方：</strong> パソコンのブラウザでGoogleマップを開き、目的地をクリックした状態の<strong>上のアドレスバーのURL（<code>https://www.google.com/maps/...</code>）をコピーして貼り付けるだけ</strong>で、地図ピンと経路案内ボタンが自動作成されます。</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="p-3.5 rounded-2xl border border-slate-200 bg-white">
-                            <span class="inline-block px-2 py-0.5 rounded bg-teal-100 text-teal-700 font-bold text-xs mb-1">STEP 4：Netlify Dropで公開・共有</span>
-                            <p class="text-xs text-slate-600">右上の<strong>「HTML出力 (Netlify用)」</strong>からZIP（または<code>index.html</code>）をダウンロードし、Netlify Dropへドロップして発行されたURLをメンバーへ共有します。</p>
+
+                        <!-- STEP 4 -->
+                        <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex gap-3.5 items-start">
+                            <div class="w-7 h-7 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-sm text-slate-800">右上の「完成・ダウンロード」からZIPファイルを保存する</h4>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    入力が終わったら、画面右上の緑色の<strong>「完成・ダウンロード」</strong>ボタンを押し、<strong>「しおり一式をダウンロードする（ZIP形式）」</strong>をクリックします。ダウンロードしたZIPファイルは、右クリック→「すべて展開（解凍）」してフォルダにしておきます。
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- STEP 5 -->
+                        <div class="p-4 rounded-2xl border-2 border-teal-200 bg-teal-50/50 shadow-sm flex gap-3.5 items-start">
+                            <div class="w-7 h-7 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">5</div>
+                            <div class="space-y-1.5">
+                                <h4 class="font-bold text-sm text-teal-950">Netlify Drop にフォルダをドロップして無料公開！</h4>
+                                <ol class="text-xs text-teal-950 space-y-1 list-decimal list-inside leading-relaxed">
+                                    <li>無料公開サイト <strong><a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="underline font-bold text-teal-700">Netlify Drop (app.netlify.com/drop)</a></strong> を開きます。</li>
+                                    <li>画面中央の点線エリアに、STEP 4で解凍した<strong>フォルダごとドラッグ＆ドロップ</strong>します。</li>
+                                    <li>数秒後に表示されるURL（例：<code>https://〇〇-〇〇.netlify.app</code>）をコピーして、メンバーのLINEやDiscordに貼れば全員のスマホで見られます！</li>
+                                </ol>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Netlify Drop 運用専用ガイド -->
-                <section class="bg-teal-50/80 p-4 sm:p-5 rounded-2xl border border-teal-200 space-y-2.5">
-                    <h3 class="font-bold text-base text-teal-900 flex items-center gap-2">
-                        <i class="fas fa-cloud-upload-alt text-teal-600"></i>3. Netlify Drop での公開・更新方法
-                    </h3>
-                    <ol class="text-xs sm:text-sm text-teal-950 space-y-2 list-decimal list-inside leading-relaxed">
-                        <li>ツール右上の<strong>「HTML出力 (Netlify用)」</strong>をクリックし、<strong>「検索除け完全パック (ZIP)」</strong>をダウンロードして解凍します（<code>index.html</code>・<code>robots.txt</code>・<code>_headers</code> が入ったフォルダができます）。</li>
-                        <li>ブラウザで <strong><a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" class="underline text-teal-700">https://app.netlify.com/drop</a></strong> を開きます（無料アカウント登録をすると公開URLが消えずにずっと維持され、後から上書き更新もできます）。</li>
-                        <li>画面中央の点線エリアに、<strong>解凍したフォルダを丸ごとドラッグ＆ドロップ</strong>します。</li>
-                        <li>数秒で <code>https://〇〇-〇〇-12345.netlify.app</code> のようなランダムURLが発行されるので、メンバーのLINE・Discord等に共有してください。</li>
-                        <li><strong>内容を修正したい場合：</strong> Netlifyの管理画面の「Deploys」タブに新しいフォルダを再度ドラッグ＆ドロップするだけで、<strong>同じURLのまま中身だけ更新</strong>できます。</li>
-                    </ol>
-                </section>
-
-                <!-- 検索除け対策の解説 -->
-                <section class="bg-amber-50/80 p-4 sm:p-5 rounded-2xl border border-amber-200 space-y-2.5">
+                <!-- 検索除け・プライバシー保護について -->
+                <section class="bg-amber-50/80 p-5 rounded-2xl border border-amber-200 space-y-3">
                     <h3 class="font-bold text-base text-amber-950 flex items-center gap-2">
-                        <i class="fas fa-user-secret text-amber-600"></i>4. 検索除け（プライバシー保護）の4重の工夫
+                        <i class="fas fa-shield-alt text-amber-600"></i>大切な日程や宿泊先を守る「検索除け」の仕組み
                     </h3>
-                    <p class="text-xs sm:text-sm text-amber-950">
-                        合宿の日程や集合場所・宿泊先がGoogle等の検索結果に出ないよう、以下の4つの対策を組み込んでいます：
+                    <p class="text-xs text-amber-950 leading-relaxed">
+                        「合宿の日時やホテル名がGoogle検索で出てしまうと困る…」という場合でも安心なように、標準で以下の対策が入っています。
                     </p>
-                    <ul class="text-xs sm:text-sm text-amber-950 space-y-1.5 list-disc list-inside leading-relaxed">
-                        <li><strong>検索エンジン拒否メタタグ自動埋め込み：</strong> <code>noindex, nofollow, noarchive, nosnippet, noimageindex</code> をHTMLに自動挿入し、検索結果やキャッシュへの掲載を拒否します。</li>
-                        <li><strong>サーバー応答ヘッダ＆クローラー遮断ファイル同梱：</strong> 「検索除け完全パック (ZIP)」には Netlify 専用の <code>_headers</code>（<code>X-Robots-Tag: noindex</code>）と <code>robots.txt</code>（<code>Disallow: /</code>）が含まれており、クローラーの巡回自体を入口でブロックします。</li>
-                        <li><strong>リファラー情報遮断（no-referrer）：</strong> しおり内のGoogleマップや公式サイトリンクをメンバーがタップした際、リンク先サイトのアクセス解析に「しおりのURL」が送信されるのを防ぎます。</li>
-                        <li><strong>ランダムURL維持 ＆ 任意パスコードロック：</strong> Netlify Drop が自動生成するランダムURLをそのまま使い、さらに「基本・検索除け」タブで<strong>閲覧用パスコード（合言葉）</strong>を設定すると、合言葉を知らない人や検索ボットは本文を一切閲覧できなくなります。</li>
-                    </ul>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <p class="font-bold text-slate-800 mb-1"><i class="fas fa-search-minus text-emerald-600 mr-1"></i>① Google検索に載せない設定</p>
+                            <p class="text-slate-600 text-[11px]">「検索結果や画像検索に載せないでください」という指示がHTMLと同梱ファイルに自動で書き込まれます。</p>
+                        </div>
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <p class="font-bold text-slate-800 mb-1"><i class="fas fa-lock text-amber-500 mr-1"></i>② 合言葉（パスコード）ロック</p>
+                            <p class="text-slate-600 text-[11px]">「基本・検索除け」タブで合言葉とヒントを設定すると、合言葉を知らない人はしおりの中身を一切見られなくなります。</p>
+                        </div>
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <p class="font-bold text-slate-800 mb-1"><i class="fas fa-user-secret text-indigo-600 mr-1"></i>③ 外部サイトへのURL通知遮断</p>
+                            <p class="text-slate-600 text-[11px]">しおり内のホテル公式サイトやマップを開いた際、相手サイト側にしおりのURLが伝わらないよう保護します。</p>
+                        </div>
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <p class="font-bold text-slate-800 mb-1"><i class="fas fa-link text-teal-600 mr-1"></i>④ 推測されにくい専用URL</p>
+                            <p class="text-slate-600 text-[11px]">Netlify Dropは英単語を組み合わせたランダムなURLを自動発行するため、URLを知っているメンバーだけがアクセスできます。</p>
+                        </div>
+                    </div>
                 </section>
 
-                <section class="space-y-2">
-                    <h3 class="font-bold text-base text-indigo-700 border-b border-slate-200 pb-1.5 flex items-center gap-2">
-                        <i class="fas fa-map-pin"></i>5. GoogleマップURLの貼り付けコツ
+                <!-- よくある質問 Q&A -->
+                <section class="space-y-3">
+                    <h3 class="font-bold text-base text-slate-800 border-b-2 border-indigo-100 pb-2 flex items-center gap-2">
+                        <i class="fas fa-question-circle text-indigo-600"></i>よくある質問（Q&A）
                     </h3>
-                    <p class="text-xs sm:text-sm text-slate-600">
-                        パソコンのブラウザでGoogleマップを開き、目的地（宿泊先やコンビニ・観光地）をクリックした状態で<strong>アドレスバーの長いURL（例：<code>https://www.google.com/maps/place/.../@34.75,139.00...</code>）</strong>をコピーして貼り付けると、ピンの座標まで100%自動で読み取ります。スマホの「共有」からコピーした短縮URL（<code>https://maps.app.goo.gl/...</code>）も経路リンクとしてそのまま利用できます。
-                    </p>
+                    <div class="space-y-2.5 text-xs">
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <p class="font-bold text-slate-800 mb-1">Q. 公開したあとにスケジュールや持ち物を修正したいときは？</p>
+                            <p class="text-slate-600 leading-relaxed">A. このツールで内容を直して新しいZIPをダウンロード・解凍し、Netlifyの管理画面の「Deploys」タブに新しいフォルダをドラッグ＆ドロップするだけで、<strong>URLを変えずに中身だけ最新に更新</strong>できます。（※Netlifyで無料アカウント登録をしておくとURLがずっと維持され、再アップロードも簡単です）</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <p class="font-bold text-slate-800 mb-1">Q. 入力途中のデータは消えませんか？</p>
+                            <p class="text-slate-600 leading-relaxed">A. ブラウザに自動保存されますが、念のため右上メニューの<strong>「データ保存」</strong>からバックアップファイル（JSON）をパソコンに保存しておくと、別のパソコンで作業を引き継いだり、来年の合宿で使い回したりできて安心です。</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <p class="font-bold text-slate-800 mb-1">Q. エリアガイドの地図にピンを正しく表示させるコツは？</p>
+                            <p class="text-slate-600 leading-relaxed">A. Googleマップでスポットを検索したあと、ブラウザ上部の長いURL（<code>.../@34.75,139.00...</code> のように数字が含まれるURL）を貼り付けるとピンの位置が100%自動で合います。もし少しズレた場合も、AREAタブの各スポット内の「緯度・経度の微調整」から調整できます。</p>
+                        </div>
+                    </div>
                 </section>
             </div>
 
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button id="btn-help-ok" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
-                    閉じて編集に戻る
+                <button id="btn-help-ok" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition">
+                    編集画面に戻る
                 </button>
             </div>
         </div>
@@ -378,6 +467,18 @@
     </div>
 
 <script>
+/**
+ * 緯度・経度の妥当性チェックヘルパー
+ */
+function isValidLatLng(lat, lng) {
+    const nLat = Number(lat);
+    const nLng = Number(lng);
+    return Number.isFinite(nLat) && Number.isFinite(nLng) &&
+           nLat >= -90 && nLat <= 90 &&
+           nLng >= -180 && nLng <= 180 &&
+           !(nLat === 0 && nLng === 0);
+}
+
 /**
  * GoogleマップURL解析ヘルパー
  */
@@ -426,6 +527,12 @@ function parseGoogleMapsInput(rawInput) {
             lat = parseFloat(directCoordMatch[1]);
             lng = parseFloat(directCoordMatch[2]);
         }
+    }
+
+    // 座標の範囲検証
+    if (lat !== null && lng !== null && !isValidLatLng(lat, lng)) {
+        lat = null;
+        lng = null;
     }
 
     // 5. URL内の /place/施設名/ または ?q=施設名
@@ -481,7 +588,6 @@ function parseGoogleMapsInput(rawInput) {
 
 /**
  * 初期画面用のテンプレートデータ
- * 注意事項と持ち物は初期状態でも実用的な例を読み込んだ状態にし、検索除けもONにする
  */
 const EMPTY_SHIORI_DATA = {
     meta: {
@@ -619,8 +725,8 @@ const EMPTY_SHIORI_DATA = {
                 accessDetail: "",
                 mapUrl: "",
                 mapQuery: "",
-                lat: 35.683,
-                lng: 139.769,
+                lat: null,
+                lng: null,
                 mapPopup: ""
             }
         ]
@@ -657,7 +763,7 @@ const SAMPLE_SHIORI_DATA = {
         enableNoIndex: true,
         blockReferrer: true,
         passcode: "",
-        passcodeHint: "例：LINEグループでお知らせした4桁の数字"
+        passcodeHint: "LINEグループでお知らせした合言葉（4桁の数字）"
     },
     plan: {
         hotelName: "サンライズガーデン",
@@ -1077,12 +1183,22 @@ function normalizeShioriData(raw) {
     if (data.plan && data.plan.mapUrl === undefined) {
         data.plan.mapUrl = data.plan.mapQuery || "";
     }
-    if (data.areaGuide && Array.isArray(data.areaGuide.spots)) {
-        data.areaGuide.spots.forEach(sp => {
-            if (sp.mapUrl === undefined) {
-                sp.mapUrl = sp.mapQuery || "";
-            }
-        });
+    if (data.areaGuide) {
+        if (!isValidLatLng(data.areaGuide.hotelLat, data.areaGuide.hotelLng)) {
+            data.areaGuide.hotelLat = 35.681236;
+            data.areaGuide.hotelLng = 139.767125;
+        }
+        if (Array.isArray(data.areaGuide.spots)) {
+            data.areaGuide.spots.forEach(sp => {
+                if (sp.mapUrl === undefined) {
+                    sp.mapUrl = sp.mapQuery || "";
+                }
+                if (sp.lat !== null && sp.lng !== null && !isValidLatLng(sp.lat, sp.lng)) {
+                    sp.lat = null;
+                    sp.lng = null;
+                }
+            });
+        }
     }
     return data;
 }
@@ -1094,7 +1210,7 @@ let previewUpdateTimer = null;
 
 // ローカルストレージから前回の編集状態を復元
 try {
-    const saved = localStorage.getItem('shioriGeneratorDraft_v5');
+    const saved = localStorage.getItem('shioriGeneratorDraft_v6');
     if (saved) {
         appData = normalizeShioriData(JSON.parse(saved));
     }
@@ -1126,7 +1242,7 @@ function showToast(msg, isError = false) {
     toast.classList.remove('translate-y-20', 'opacity-0');
     setTimeout(() => {
         toast.classList.add('translate-y-20', 'opacity-0');
-    }, 2800);
+    }, 3000);
 }
 
 function showCustomConfirm(title, message, onConfirm) {
@@ -1178,7 +1294,7 @@ function updateSecurityBadgeUI() {
 function saveDraftAndRefreshPreview(immediate = false) {
     updateSecurityBadgeUI();
     try {
-        localStorage.setItem('shioriGeneratorDraft_v5', JSON.stringify(appData));
+        localStorage.setItem('shioriGeneratorDraft_v6', JSON.stringify(appData));
     } catch (e) {
         // 画像サイズが大きすぎる場合など
     }
@@ -1188,6 +1304,33 @@ function saveDraftAndRefreshPreview(immediate = false) {
     } else {
         previewUpdateTimer = setTimeout(updatePreviewIframe, 350);
     }
+}
+
+/**
+ * パスコード入力時のリアルタイムステータス更新
+ */
+function handlePasscodeInput(val) {
+    appData.meta.passcode = val;
+    const statusBadge = document.getElementById('passcode-status-badge');
+    const hintInput = document.getElementById('passcode-hint-input');
+    const hasPasscode = val && val.trim() !== '';
+
+    if (statusBadge) {
+        statusBadge.className = hasPasscode
+            ? 'text-[10px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold'
+            : 'text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500';
+        statusBadge.textContent = hasPasscode ? 'ロック有効' : '未設定（誰でも閲覧可）';
+    }
+    if (hintInput) {
+        if (hasPasscode) {
+            hintInput.classList.remove('bg-slate-50', 'text-slate-500');
+            hintInput.classList.add('bg-white', 'text-slate-800');
+        } else {
+            hintInput.classList.remove('bg-white', 'text-slate-800');
+            hintInput.classList.add('bg-slate-50', 'text-slate-500');
+        }
+    }
+    saveDraftAndRefreshPreview();
 }
 
 /**
@@ -1201,7 +1344,7 @@ function handlePlanMapUrlInput(val) {
     } else if (!val.trim()) {
         appData.plan.mapQuery = '';
     }
-    if (parsed.lat !== null && parsed.lng !== null) {
+    if (parsed.lat !== null && parsed.lng !== null && isValidLatLng(parsed.lat, parsed.lng)) {
         appData.areaGuide.hotelLat = parsed.lat;
         appData.areaGuide.hotelLng = parsed.lng;
     }
@@ -1218,11 +1361,30 @@ function handleSpotMapUrlInput(idx, val) {
     } else if (!val.trim()) {
         sp.mapQuery = '';
     }
-    if (parsed.lat !== null && parsed.lng !== null) {
+    if (parsed.lat !== null && parsed.lng !== null && isValidLatLng(parsed.lat, parsed.lng)) {
         sp.lat = parsed.lat;
         sp.lng = parsed.lng;
+        const latInput = document.getElementById(`spot-lat-input-${idx}`);
+        const lngInput = document.getElementById(`spot-lng-input-${idx}`);
+        if (latInput) latInput.value = parsed.lat;
+        if (lngInput) lngInput.value = parsed.lng;
+    } else if (!val.trim()) {
+        sp.lat = null;
+        sp.lng = null;
     }
     updateMapStatusBadge(`spot-map-status-${idx}`, parsed, false);
+    saveDraftAndRefreshPreview();
+}
+
+function handleSpotCoordManualInput(idx, field, val) {
+    const sp = appData.areaGuide.spots[idx];
+    const trimmed = val.trim();
+    if (trimmed === '') {
+        sp[field] = null;
+    } else {
+        const num = parseFloat(trimmed);
+        sp[field] = Number.isFinite(num) ? num : null;
+    }
     saveDraftAndRefreshPreview();
 }
 
@@ -1234,10 +1396,10 @@ function renderMapStatusHtml(parsed, isHotel = false) {
         return `<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>URLから座標を自動取得しました（緯度: ${parsed.lat.toFixed(5)}, 経度: ${parsed.lng.toFixed(5)}）${isHotel ? ' ※周辺マップの宿泊先ピンも連動済み' : ''}</span>`;
     }
     if (parsed.status === 'short_url') {
-        return `<span class="text-amber-700"><i class="fas fa-info-circle text-amber-500 mr-1"></i>短縮URLを検出しました。「Google Mapsで開く」ボタンにはそのまま使えます。地図ピンも自動配置したい場合は、ブラウザで開いた後の長いURLを貼ってください。</span>`;
+        return `<span class="text-amber-700"><i class="fas fa-info-circle text-amber-500 mr-1"></i>短縮URLを検出しました。「経路案内 / Google Mapsで開く」にはそのまま使えます。地図上のピン位置も合わせる場合は、ブラウザで開いた後の長いURL（<code>.../@緯度,経度...</code>）を貼るか下の緯度経度を入力してください。</span>`;
     }
     if (parsed.status === 'place_name_ok') {
-        return `<span class="text-blue-700"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>スポット名「${escapeHtml(parsed.query)}」を自動抽出しました。</span>`;
+        return `<span class="text-blue-700"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>スポット名「${escapeHtml(parsed.query)}」を抽出しました（ピン位置も合わせる場合は <code>@緯度,経度</code> を含むURLを貼ってください）。</span>`;
     }
     return `<span class="text-slate-600"><i class="fas fa-search-location text-indigo-500 mr-1"></i>「${escapeHtml(parsed.query || '入力内容')}」でマップ検索・リンクを生成します。</span>`;
 }
@@ -1400,54 +1562,66 @@ function renderEditorTab(tab) {
 
     if (tab === 'basic') {
         const m = appData.meta;
+        const hasPasscode = m.passcode && m.passcode.trim() !== '';
         container.innerHTML = `
             <div class="space-y-5">
                 <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 flex items-center justify-between gap-2">
                     <p class="text-[11px] text-indigo-900">
-                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>各欄の薄い文字を参考に入力してください。完成例を丸ごと見る場合は右のボタンから読み込めます。
+                        <i class="fas fa-info-circle mr-1 text-indigo-600"></i>各欄の薄い文字を参考に入力してください。完成見本を読み込むこともできます。
                     </p>
                     <button type="button" onclick="loadSampleDataWithConfirm()" class="px-2.5 py-1.5 rounded-lg bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white text-[11px] font-bold whitespace-nowrap transition shadow-sm">
-                        例を読み込む
+                        見本を読込
                     </button>
                 </div>
 
                 <!-- 検索除け・プライバシー保護設定 -->
                 <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 space-y-3">
                     <h2 class="text-sm font-bold text-emerald-950 flex items-center gap-2">
-                        <i class="fas fa-user-secret text-emerald-600 text-base"></i>検索除け・プライバシー保護設定（Netlify Drop運用向け）
+                        <i class="fas fa-user-secret text-emerald-600 text-base"></i>検索除け・プライバシー保護設定
                     </h2>
                     <div class="space-y-2.5">
                         <label class="flex items-start gap-2.5 cursor-pointer bg-white/90 p-2.5 rounded-xl border border-emerald-200/80">
                             <input type="checkbox" ${m.enableNoIndex ? 'checked' : ''} onchange="updateDataByPath('meta.enableNoIndex', this.checked)" class="mt-0.5 rounded text-emerald-600">
                             <div class="text-xs">
-                                <span class="font-bold text-slate-800 block">検索エンジンに載せない（noindex / nofollow / noarchive）</span>
-                                <span class="text-[11px] text-slate-500">GoogleやYahoo!等の検索結果・キャッシュ・画像検索から除外します（推奨ON）。</span>
+                                <span class="font-bold text-slate-800 block">Google等の検索結果に載せない（検索除け）</span>
+                                <span class="text-[11px] text-slate-500">検索エンジンや画像検索にヒットしないよう保護します（推奨ON）。</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-2.5 cursor-pointer bg-white/90 p-2.5 rounded-xl border border-emerald-200/80">
                             <input type="checkbox" ${m.blockReferrer ? 'checked' : ''} onchange="updateDataByPath('meta.blockReferrer', this.checked)" class="mt-0.5 rounded text-emerald-600">
                             <div class="text-xs">
-                                <span class="font-bold text-slate-800 block">リンク先へのURL流出を防ぐ（no-referrer）</span>
-                                <span class="text-[11px] text-slate-500">外部リンクを踏んだ際、相手サイトのアクセス解析に「しおりのURL」が伝わるのを遮断します。</span>
+                                <span class="font-bold text-slate-800 block">外部リンク先へのURL流出を防ぐ</span>
+                                <span class="text-[11px] text-slate-500">地図やホテル公式サイトを開いた際、相手サイトに「しおりのURL」が伝わるのを防ぎます。</span>
                             </div>
                         </label>
 
-                        <div class="bg-white/90 p-3 rounded-xl border border-emerald-200/80 space-y-2">
+                        <!-- パスコード＆ヒント編集ブロック（常に両方編集可能） -->
+                        <div class="bg-white/95 p-3.5 rounded-xl border border-emerald-200/80 space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                                     <i class="fas fa-lock text-amber-500"></i>閲覧用パスコード（合言葉）ロック（任意）
                                 </label>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full ${m.passcode ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500'}">
-                                    ${m.passcode ? 'ロック有効' : '未設定（誰でも閲覧可）'}
+                                <span id="passcode-status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full ${hasPasscode ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500'}">
+                                    ${hasPasscode ? 'ロック有効' : '未設定（誰でも閲覧可）'}
                                 </span>
                             </div>
-                            <input type="text" value="${escapeHtml(m.passcode)}" placeholder="空欄ならロックなし（例：2026summer）" oninput="updateDataByPath('meta.passcode', this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600">
-                            ${m.passcode ? `
-                                <input type="text" value="${escapeHtml(m.passcodeHint)}" placeholder="合言葉のヒント（例：LINEグループでお知らせした合言葉）" oninput="updateDataByPath('meta.passcodeHint', this.value)" class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-600">
-                            ` : ''}
+                            
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">合言葉（パスコード）</label>
+                                    <input type="text" value="${escapeHtml(m.passcode)}" placeholder="空欄ならロックなし（例：2026summer）" oninput="handlePasscodeInput(this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">
+                                        <i class="fas fa-lightbulb text-amber-400 mr-1"></i>パスコードのヒント（ロック画面に表示されます）
+                                    </label>
+                                    <input type="text" id="passcode-hint-input" value="${escapeHtml(m.passcodeHint)}" placeholder="例：LINEグループでお知らせした4桁の数字" oninput="updateDataByPath('meta.passcodeHint', this.value)" class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-600 ${hasPasscode ? 'bg-white text-slate-800' : 'bg-slate-50 text-slate-500'}">
+                                </div>
+                            </div>
+
                             <p class="text-[10px] text-slate-500 leading-relaxed">
-                                ※合言葉を設定すると、URLを知っている人でも合言葉を入力するまで日程や宿泊先が表示されず、検索ボットも中身を読み取れなくなります（プレビュー画面では編集しやすいよう自動解除されています）。
+                                ※合言葉を設定すると、URLを知っている人でも合言葉を入力するまで日程や宿泊先が表示されなくなります（プレビュー画面では編集しやすいよう自動解除されています）。
                             </p>
                         </div>
                     </div>
@@ -1941,12 +2115,25 @@ function renderEditorTab(tab) {
                                     <label class="block text-[10px] font-bold text-slate-500">正式名称</label>
                                     <input type="text" value="${escapeHtml(sp.name)}" placeholder="例：セブン-イレブン 伊豆河津駅前店" oninput="updateDataByPath('areaGuide.spots.${idx}.name', this.value)" class="w-full text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300">
                                 </div>
-                                <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-200/80 space-y-1">
+                                <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-200/80 space-y-1.5">
                                     <label class="block text-[10px] font-bold text-blue-900 flex items-center gap-1">
                                         <i class="fab fa-google text-blue-600"></i>Googleマップ URL（貼り付けるだけでピン＆経路案内を自動設定）
                                     </label>
                                     <input type="text" value="${escapeHtml(sp.mapUrl || sp.mapQuery)}" placeholder="例：https://www.google.com/maps/place/..." oninput="handleSpotMapUrlInput(${idx}, this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-blue-300 bg-white focus:outline-none focus:border-blue-600">
                                     <p id="spot-map-status-${idx}" class="text-[10px] leading-snug">${renderMapStatusHtml(parsedSpotMap, false)}</p>
+                                    <details class="pt-0.5">
+                                        <summary class="text-[10px] text-blue-700 cursor-pointer font-medium">地図ピン座標の確認・手動微調整（必要な場合のみ）</summary>
+                                        <div class="grid grid-cols-2 gap-2 mt-1.5">
+                                            <div>
+                                                <label class="block text-[9px] text-slate-500">緯度 (Lat)</label>
+                                                <input type="text" id="spot-lat-input-${idx}" value="${sp.lat !== null && sp.lat !== undefined ? escapeHtml(sp.lat) : ''}" placeholder="例：34.7485" oninput="handleSpotCoordManualInput(${idx}, 'lat', this.value)" class="w-full text-[11px] font-mono px-2 py-1 rounded border border-slate-300 bg-white">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] text-slate-500">経度 (Lng)</label>
+                                                <input type="text" id="spot-lng-input-${idx}" value="${sp.lng !== null && sp.lng !== undefined ? escapeHtml(sp.lng) : ''}" placeholder="例：138.9918" oninput="handleSpotCoordManualInput(${idx}, 'lng', this.value)" class="w-full text-[11px] font-mono px-2 py-1 rounded border border-slate-300 bg-white">
+                                            </div>
+                                        </div>
+                                    </details>
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-slate-500">説明文</label>
@@ -1984,7 +2171,7 @@ function renderEditorTab(tab) {
             <div class="space-y-4">
                 <div class="border-b border-slate-200 pb-2">
                     <h2 class="text-base font-bold text-slate-800">持ち物リスト (${items.length}項目)</h2>
-                    <p class="text-[11px] text-slate-500">初期状態でサンプルと同じ持ち物リストが入っています。必要に応じて追加・編集してください</p>
+                    <p class="text-[11px] text-slate-500">初期状態で定番の持ち物リストが入っています。必要に応じて追加・編集してください</p>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="new-checklist-input" placeholder="例：水着、サングラス、トランプなど" onkeydown="if(event.key==='Enter'){addChecklistItem();}" class="flex-1 text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500">
@@ -2163,8 +2350,8 @@ function addAreaSpot() {
         accessDetail: "",
         mapUrl: "",
         mapQuery: "",
-        lat: (Number(appData.areaGuide.hotelLat) || 35.6812) + 0.004,
-        lng: (Number(appData.areaGuide.hotelLng) || 139.7671) - 0.004,
+        lat: null,
+        lng: null,
         mapPopup: ""
     });
     renderEditorTab('area');
@@ -2200,13 +2387,13 @@ function removeChecklistItem(idx) {
 
 function loadSampleDataWithConfirm() {
     showCustomConfirm(
-        'サンプルデータの読み込み',
+        '完成見本の読み込み',
         'サンプル例として「HAIKARA 夏合宿のしおり 2026」の完成データを読み込みます。現在の入力内容は上書きされますがよろしいですか？',
         () => {
             appData = normalizeShioriData(SAMPLE_SHIORI_DATA);
             saveDraftAndRefreshPreview(true);
             renderEditorTab(currentTab);
-            showToast('「夏合宿のしおり」サンプルを読み込みました！');
+            showToast('「夏合宿のしおり」の見本を読み込みました！');
         }
     );
 }
@@ -2430,21 +2617,26 @@ ${eventsHtml}
         }).join('\n');
     };
 
-    // Leaflet マップデータ用JSON
+    // Leaflet マップデータ用JSON（有効な座標を持つスポットのみピン配置し、東京駅デフォルト汚染による広域ズレを防ぐ）
+    const safeHotelLat = isValidLatLng(ag.hotelLat, ag.hotelLng) ? Number(ag.hotelLat) : 35.681236;
+    const safeHotelLng = isValidLatLng(ag.hotelLat, ag.hotelLng) ? Number(ag.hotelLng) : 139.767125;
+
     const mapLocationsData = [
         {
             id: 'hotel',
             category: 'hotel',
-            lat: Number(ag.hotelLat) || 35.681236,
-            lng: Number(ag.hotelLng) || 139.767125,
+            lat: safeHotelLat,
+            lng: safeHotelLng,
             popup: `<b class="text-primary">${escapeHtml(p.hotelName || '宿泊先')}</b><br>${escapeHtml(ag.hotelPopupDesc || '今回の宿泊先です。')}`
         },
-        ...ag.spots.map(sp => ({
-            category: sp.category,
-            lat: Number(sp.lat) || 35.683,
-            lng: Number(sp.lng) || 139.769,
-            popup: `<b>${escapeHtml(sp.name || sp.shortName || 'スポット')}</b><br>${escapeHtml(sp.mapPopup || sp.accessShort || '')}`
-        }))
+        ...ag.spots
+            .filter(sp => sp.lat !== null && sp.lng !== null && isValidLatLng(sp.lat, sp.lng))
+            .map(sp => ({
+                category: sp.category,
+                lat: Number(sp.lat),
+                lng: Number(sp.lng),
+                popup: `<b>${escapeHtml(sp.name || sp.shortName || 'スポット')}</b><br>${escapeHtml(sp.mapPopup || sp.accessShort || '')}`
+            }))
     ];
 
     const checklistDisplayItems = data.checklist.filter(it => it && it.trim() !== '');
@@ -2468,7 +2660,7 @@ ${eventsHtml}
         </div>
         <div class="space-y-2.5 text-left">
             <input type="password" id="passcode-input" placeholder="合言葉を入力" onkeydown="if(event.key==='Enter'){verifyShioriPasscode();}" class="w-full px-4 py-3 rounded-xl border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:border-primary">
-            ${m.passcodeHint ? `<p class="text-[11px] text-gray-500 text-center"><i class="fas fa-lightbulb text-amber-400 mr-1"></i>ヒント：${escapeHtml(m.passcodeHint)}</p>` : ''}
+            ${m.passcodeHint ? `<div class="bg-amber-50 border border-amber-200/80 rounded-xl px-3 py-2 text-[11px] text-amber-900 text-center"><i class="fas fa-lightbulb text-amber-500 mr-1"></i>ヒント：${escapeHtml(m.passcodeHint)}</div>` : ''}
             <p id="passcode-error" class="hidden text-xs text-red-500 font-bold text-center">合言葉が正しくありません</p>
         </div>
         <button type="button" onclick="verifyShioriPasscode()" class="w-full py-3 rounded-xl bg-primary hover:opacity-90 text-white font-bold text-sm shadow-md transition">
@@ -2486,8 +2678,8 @@ ${eventsHtml}
         const gate = document.getElementById('passcode-gate');
         if (gate) gate.style.display = 'none';
         document.body.style.overflow = '';
-        if (typeof areaMap !== 'undefined' && areaMap) {
-            setTimeout(() => areaMap.invalidateSize(), 150);
+        if (typeof refreshAreaMapLayout === 'function') {
+            setTimeout(refreshAreaMapLayout, 150);
         }
     }
 
@@ -2599,6 +2791,16 @@ ${eventsHtml}
         .fade-in.visible {
             opacity: 1;
             transform: translateY(0);
+        }
+
+        /* Leaflet タイル崩れ防止 */
+        #area-map {
+            background-color: #e2e8f0;
+            min-height: 320px;
+        }
+        .leaflet-container img {
+            max-width: none !important;
+            max-height: none !important;
         }
 
         ::-webkit-scrollbar {
@@ -2873,7 +3075,7 @@ ${cautionsHtml}
     </section>
 
     <!-- AREA GUIDE Section -->
-    <section id="area-guide" class="pt-6 fade-in">
+    <section id="area-guide" class="pt-6">
         <div class="text-center">
             <h2 class="text-3xl font-serif text-primary">AREA GUIDE</h2>
             <p class="text-textLight text-sm tracking-widest mt-1 mb-10">周辺施設・アクセス</p>
@@ -2890,6 +3092,9 @@ ${cautionsHtml}
             <!-- 周辺施設 Map (Leaflet) -->
             <div class="w-full h-80 md:h-[450px] rounded-2xl overflow-hidden shadow-inner border border-gray-200 mb-8 relative z-0">
                 <div id="area-map" class="w-full h-full"></div>
+                <button type="button" id="btn-reset-area-map" class="absolute top-3 right-3 z-[500] bg-white/95 hover:bg-white text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-gray-200 transition flex items-center gap-1.5">
+                    <i class="fas fa-crosshairs text-primary"></i>全体表示
+                </button>
             </div>
 
             <!-- タブ切り替えボタン -->
@@ -3057,16 +3262,58 @@ ${renderCategoryCards('gourmet')}
         });
     }
 
-    // --- Leaflet Map 初期化 & タブ切り替えロジック ---
-    let areaMap;
-    let markersLayer;
+    // --- Leaflet Map 初期化 & タブ切り替えロジック（タイル崩れ・サイズ0対策済み） ---
+    let areaMap = null;
+    let markersLayer = null;
     let mapLocations = [];
+    let currentMapCategory = 'all';
+
+    function fitMapToCurrentMarkers() {
+        if (!areaMap || !markersLayer) return;
+        const layers = markersLayer.getLayers();
+        if (layers.length === 1) {
+            const ll = layers[0].getLatLng();
+            areaMap.setView(ll, 15, { animate: false });
+        } else if (layers.length > 1) {
+            areaMap.fitBounds(markersLayer.getBounds(), { padding: [36, 36], maxZoom: 16, animate: false });
+        }
+    }
+
+    function refreshAreaMapLayout() {
+        if (!areaMap) return;
+        const container = document.getElementById('area-map');
+        if (!container || container.offsetWidth === 0 || container.offsetHeight === 0) return;
+        areaMap.invalidateSize({ animate: false });
+        fitMapToCurrentMarkers();
+    }
+
+    const updateMapMarkers = (category) => {
+        currentMapCategory = category || 'all';
+        if (!markersLayer) return;
+        markersLayer.clearLayers();
+
+        mapLocations.forEach(loc => {
+            if (currentMapCategory === 'all' || loc.category === 'hotel' || loc.category === currentMapCategory) {
+                const marker = L.marker([loc.lat, loc.lng], { icon: loc.icon });
+                marker.bindPopup(loc.popup);
+                markersLayer.addLayer(marker);
+            }
+        });
+
+        fitMapToCurrentMarkers();
+    };
 
     const initMap = () => {
         if (typeof L === 'undefined') return;
-        areaMap = L.map('area-map').setView([${Number(ag.hotelLat) || 34.750}, ${Number(ag.hotelLng) || 138.995}], 14);
+        const mapEl = document.getElementById('area-map');
+        if (!mapEl) return;
+
+        areaMap = L.map('area-map', {
+            scrollWheelZoom: false
+        }).setView([${safeHotelLat}, ${safeHotelLng}], 14);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
         }).addTo(areaMap);
 
@@ -3105,39 +3352,34 @@ ${renderCategoryCards('gourmet')}
 
         updateMapMarkers('all');
 
-        setTimeout(() => {
-            if (areaMap) {
-                areaMap.invalidateSize();
-                if (markersLayer.getLayers().length > 0) {
-                    areaMap.fitBounds(markersLayer.getBounds(), { padding: [30, 30], maxZoom: 16 });
-                }
-            }
-        }, 350);
+        // コンテナサイズ変化（タブ切替・スマホ幅切替・非表示からの復帰）を自動検知してタイル崩れを防止
+        if (typeof ResizeObserver !== 'undefined') {
+            const ro = new ResizeObserver(() => {
+                refreshAreaMapLayout();
+            });
+            ro.observe(mapEl);
+        }
 
-        window.addEventListener('resize', () => {
-            areaMap.invalidateSize();
-            if(markersLayer.getLayers().length > 0) {
-                areaMap.fitBounds(markersLayer.getBounds(), { padding: [30, 30] });
-            }
-        });
-    };
+        // スクロールして地図が画面内に入ったタイミングでも再計算
+        if (typeof IntersectionObserver !== 'undefined') {
+            const mapIo = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        refreshAreaMapLayout();
+                    }
+                });
+            }, { threshold: 0.05 });
+            mapIo.observe(mapEl);
+        }
 
-    const updateMapMarkers = (category) => {
-        if (!markersLayer) return;
-        markersLayer.clearLayers();
-        let bounds = [];
+        setTimeout(refreshAreaMapLayout, 250);
+        setTimeout(refreshAreaMapLayout, 800);
 
-        mapLocations.forEach(loc => {
-            if (category === 'all' || loc.category === 'hotel' || loc.category === category) {
-                const marker = L.marker([loc.lat, loc.lng], { icon: loc.icon });
-                marker.bindPopup(loc.popup);
-                markersLayer.addLayer(marker);
-                bounds.push([loc.lat, loc.lng]);
-            }
-        });
+        window.addEventListener('resize', refreshAreaMapLayout);
 
-        if (bounds.length > 0) {
-            areaMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+        const resetBtn = document.getElementById('btn-reset-area-map');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', refreshAreaMapLayout);
         }
     };
 
@@ -3170,6 +3412,7 @@ ${renderCategoryCards('gourmet')}
             });
 
             if (areaMap) {
+                areaMap.invalidateSize({ animate: false });
                 updateMapMarkers(category);
             }
         });
@@ -3288,12 +3531,15 @@ function updatePreviewIframe() {
             if (savedScrollY > 0) {
                 iframe.contentWindow.scrollTo(0, savedScrollY);
             }
+            if (typeof iframe.contentWindow.refreshAreaMapLayout === 'function') {
+                iframe.contentWindow.refreshAreaMapLayout();
+            }
         } catch (e) {}
     };
 }
 
 /**
- * HTML出力モーダルを開く（Netlify Drop 公開＆検索除けパッケージ）
+ * 完成・ダウンロードモーダルを開く
  */
 function openExportModal() {
     const exportModal = document.getElementById('export-modal');
@@ -3305,17 +3551,18 @@ function openExportModal() {
     const m = appData.meta;
     const statusBadges = [];
     if (m.enableNoIndex) {
-        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>検索エンジン除外 (noindex) 有効</span>');
+        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>検索除け（Google検索に載せない）ON</span>');
     } else {
-        statusBadges.push('<span class="text-amber-700"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>検索エンジン除外 OFF</span>');
+        statusBadges.push('<span class="text-amber-700"><i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i>検索除け OFF</span>');
     }
     if (m.blockReferrer) {
-        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>参照元URL秘匿 (no-referrer) 有効</span>');
+        statusBadges.push('<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>リンク先へのURL通知防止 ON</span>');
     }
     if (m.passcode && m.passcode.trim() !== '') {
-        statusBadges.push(`<span class="text-emerald-700 font-bold"><i class="fas fa-lock text-amber-500 mr-1"></i>合言葉ロック有効（合言葉：<code>${escapeHtml(m.passcode.trim())}</code>）</span>`);
+        const hintLabel = m.passcodeHint && m.passcodeHint.trim() !== '' ? ` / ヒント：${escapeHtml(m.passcodeHint.trim())}` : '';
+        statusBadges.push(`<span class="text-emerald-700 font-bold"><i class="fas fa-lock text-amber-500 mr-1"></i>合言葉ロック有効（合言葉：<code>${escapeHtml(m.passcode.trim())}</code>${hintLabel}）</span>`);
     } else {
-        statusBadges.push('<span class="text-slate-500"><i class="fas fa-unlock mr-1"></i>合言葉ロックなし（ランダムURL限定公開）</span>');
+        statusBadges.push('<span class="text-slate-500"><i class="fas fa-unlock mr-1"></i>合言葉ロックなし（URLを知っている人のみ閲覧可）</span>');
     }
     summaryEl.innerHTML = statusBadges.join('');
 
@@ -3328,7 +3575,7 @@ function openExportModal() {
  */
 async function downloadNetlifyZipPackage() {
     if (typeof JSZip === 'undefined') {
-        showToast('ZIP生成ライブラリの読み込みに失敗しました。「index.html 単体保存」をご利用ください。', true);
+        showToast('ZIP生成ライブラリの読み込みに失敗しました。「index.html 単体で保存」をご利用ください。', true);
         return;
     }
     try {
@@ -3374,10 +3621,10 @@ async function downloadNetlifyZipPackage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('検索除け完全パック (shiori-netlify-drop.zip) をダウンロードしました！解凍してフォルダごとNetlify Dropへドロップしてください');
+        showToast('しおり一式（shiori-netlify-drop.zip）をダウンロードしました！解凍してフォルダごとNetlify Dropへドロップしてください');
     } catch (err) {
         console.error(err);
-        showToast('ZIPの生成に失敗しました。「index.html 単体保存」をお試しください。', true);
+        showToast('ZIPの生成に失敗しました。「index.html 単体で保存」をお試しください。', true);
     }
 }
 
@@ -3432,7 +3679,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnMobile.classList.add('text-slate-500');
         setTimeout(() => {
             const iframe = document.getElementById('preview-iframe');
-            if (iframe.contentWindow) iframe.contentWindow.dispatchEvent(new Event('resize'));
+            if (iframe.contentWindow) {
+                iframe.contentWindow.dispatchEvent(new Event('resize'));
+                if (typeof iframe.contentWindow.refreshAreaMapLayout === 'function') {
+                    iframe.contentWindow.refreshAreaMapLayout();
+                }
+            }
         }, 320);
     });
 
@@ -3444,7 +3696,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDesktop.classList.add('text-slate-500');
         setTimeout(() => {
             const iframe = document.getElementById('preview-iframe');
-            if (iframe.contentWindow) iframe.contentWindow.dispatchEvent(new Event('resize'));
+            if (iframe.contentWindow) {
+                iframe.contentWindow.dispatchEvent(new Event('resize'));
+                if (typeof iframe.contentWindow.refreshAreaMapLayout === 'function') {
+                    iframe.contentWindow.refreshAreaMapLayout();
+                }
+            }
         }, 320);
     });
 
@@ -3453,7 +3710,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('プレビューを再読み込みしました');
     });
 
-    // HTML出力モーダル（Netlify Drop用）
+    // 完成・ダウンロードモーダル
     const exportModal = document.getElementById('export-modal');
     const codeArea = document.getElementById('generated-code-area');
 
@@ -3462,6 +3719,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-export-modal').addEventListener('click', () => {
         exportModal.classList.add('hidden');
         exportModal.classList.remove('flex');
+    });
+
+    exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal) {
+            exportModal.classList.add('hidden');
+            exportModal.classList.remove('flex');
+        }
     });
 
     document.getElementById('btn-download-zip').addEventListener('click', downloadNetlifyZipPackage);
@@ -3504,6 +3768,13 @@ document.addEventListener('DOMContentLoaded', () => {
         jsonModal.classList.remove('flex');
     });
 
+    jsonModal.addEventListener('click', (e) => {
+        if (e.target === jsonModal) {
+            jsonModal.classList.add('hidden');
+            jsonModal.classList.remove('flex');
+        }
+    });
+
     document.getElementById('btn-copy-json').addEventListener('click', () => {
         jsonArea.select();
         document.execCommand('copy');
@@ -3520,7 +3791,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('shiori_data.json を保存しました');
+        showToast('バックアップファイル（shiori_data.json）を保存しました');
     });
 
     document.getElementById('input-upload-json').addEventListener('change', (e) => {
@@ -3529,7 +3800,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.onload = (ev) => {
             jsonArea.value = ev.target.result;
-            showToast('JSONファイルを読み込みました。「反映する」を押してください');
+            showToast('ファイルを読み込みました。「編集画面に反映する」を押してください');
         };
         reader.readAsText(file);
     });
@@ -3545,9 +3816,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderEditorTab(currentTab);
             jsonModal.classList.add('hidden');
             jsonModal.classList.remove('flex');
-            showToast('編集データを復元しました！');
+            showToast('バックアップデータを復元しました！');
         } catch (err) {
-            showToast('JSONの形式が正しくありません', true);
+            showToast('ファイルの形式が正しくありません', true);
         }
     });
 
@@ -3578,7 +3849,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'これまでの入力内容がクリアされ、初期状態に戻ります（注意事項と持ち物の基本例は残ります）。よろしいですか？',
             () => {
                 appData = normalizeShioriData(EMPTY_SHIORI_DATA);
-                localStorage.removeItem('shioriGeneratorDraft_v5');
+                localStorage.removeItem('shioriGeneratorDraft_v6');
                 updateSecurityBadgeUI();
                 renderEditorTab(currentTab);
                 updatePreviewIframe();
